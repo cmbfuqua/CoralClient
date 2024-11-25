@@ -1,81 +1,140 @@
+/* General Reset */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
 }
 
-header, footer {
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    text-align: center;
-}
-
-nav ul {
-    list-style: none;
-    padding: 0;
-}
-
-nav ul li {
-    display: inline;
-    margin-right: 15px;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-}
-
-.item-list {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.item {
-    width: 200px;
-    margin: 10px;
-    text-align: center;
-}
-
-.tooltip {
-    cursor: pointer;
-    color: blue;
-    text-decoration: underline;
-}
-
-footer {
-    padding: 10px;
-    text-align: center;
-}
+/* Header Styles */
 header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-between; /* Align left and right nav on the same line */
+    align-items: center; /* Vertically align nav items */
     background-color: #333;
     color: #fff;
-    padding: 10px;
+    padding: 10px 20px;
 }
 
-.left-nav, .right-nav {
-    list-style: none;
+.left-nav ul, .right-nav ul {
+    display: inline-flex; /* Align list items horizontally */
+    gap: 15px; /* Space between nav items */
+    list-style: none; /* Remove bullet points */
+    margin: 0;
     padding: 0;
 }
-
 .left-nav {
-    display: inline;
+    justify-content: flex-start;
 }
 
 .right-nav {
-    display: inline;
-    margin-left: auto;
-}
-
-.left-nav li, .right-nav li {
-    display: inline;
-    margin-right: 15px;
+    justify-content: flex-end;
 }
 
 nav ul li a {
     color: white;
     text-decoration: none;
+}
+
+nav ul li a.active {
+    border-bottom: 2px solid #00bcd4; /* Highlight active link */
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between user icon and name */
+    font-size: 16px;
+}
+
+.user-info i {
+    font-size: 22px;
+    color: white;
+}
+
+.user-info a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.user-info a:hover {
+    color: #00bcd4; /* Highlight effect on hover */
+}
+
+/* Footer Styles */
+footer {
+    background-color: #222;
+    color: #bbb;
+    padding: 15px 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+footer p {
+    margin: 0;
+}
+
+/* Tooltip Styles */
+.tooltip {
+    position: relative;
+    color: #00bcd4;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.tooltip::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the left on small screens */
+    }
+
+    .left-nav, .right-nav {
+        flex-direction: column; /* Stack items vertically */
+        gap: 10px; /* Adjust spacing */
+    }
+
+    .user-info {
+        align-self: flex-end;
+        margin-top: 10px;
+    }
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+thead th {
+    background-color: #f4f4f4;
+    text-align: left;
+    padding: 8px;
+}
+tbody td {
+    padding: 8px;
+}
+form {
+    display: inline-block;
+    margin: 0;
 }

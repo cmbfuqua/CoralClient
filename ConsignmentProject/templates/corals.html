@@ -2,6 +2,15 @@
 
 {% block content %}
 <h2>Corals for Sale</h2>
+<div class="filter">
+    <label for="subtype_filter">Filter by type:</label>
+    <select id="subtype_filter" onchange="filterItems()">
+        <option value="all">All</option>
+        {% for subtype in coral_subtypes %}
+            <option value="{{ subtype.item_subtype_id }}">{{ subtype.name }}</option>
+        {% endfor %}
+    </select>
+</div>
 <div class="item-list">
     {% for coral in corals %}
         <div class="item">
@@ -15,5 +24,20 @@
         </div>
     {% endfor %}
 </div>
+<script>
+    function filterItems() {
+        const filterValue = document.getElementById('subtype_filter').value;
+        const items = document.querySelectorAll('.item');
+    
+        items.forEach(item => {
+            const itemSubtype = item.getAttribute('data-subtype');
+            if (filterValue === 'all' || itemSubtype === filterValue) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    </script>
 {% endblock %}
 

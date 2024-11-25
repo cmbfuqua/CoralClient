@@ -13,6 +13,10 @@ class Config:
         database="CoralClientSeller",  # Replace with your database name
         driver="ODBC Driver 17 for SQL Server"  # Ensure this driver is installed
     )
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static/uploads')
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+
     #MAIL_SERVER = 'smtp.gmail.com'
     #MAIL_PORT = 587
     #MAIL_USE_TLS = True

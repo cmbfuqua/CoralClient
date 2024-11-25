@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Profile</h2>
+<form method="POST" action="{{ url_for('edit_user') }}">
+    {{ form.hidden_tag() }}
+    {{ form.first_name.label }} {{ form.first_name() }}
+    {{ form.last_name.label }} {{ form.last_name() }}
+    {{ form.dob.label }} {{ form.dob() }}
+    {{ form.phone_number.label }} {{ form.phone_number() }}
+    {{ form.submit() }}
+</form>
+{% endblock %}

@@ -5,29 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coral & Fish Marketplace</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- For user icon -->
 </head>
 <body>
     <header>
-        <nav>
-            <ul class="left-nav">
-                <li><a href="{{ url_for('home') }}">Home</a></li>
-                <li><a href="{{ url_for('corals') }}">Corals</a></li>
-                <li><a href="{{ url_for('fish') }}">Fish</a></li>
-                {% if current_user.is_authenticated and current_user.is_seller %}
-                    <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
-                {% endif %}
-                {% if current_user.is_authenticated and current_user.is_admin %}
-                    <li><a href="{{ url_for('manage_users') }}">Manage Users</a></li>
-                    <li><a href="{{ url_for('manage_products') }}">Manage Products</a></li>
-                {% endif %}
-            </ul>
-            <ul class="right-nav">
-                {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('login') }}">Login</a></li>
-                {% endif %}
-            </ul>
+        <nav class="navbar">
+            <div class="left-nav">
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('corals') }}">Corals</a></li>
+                    <li><a href="{{ url_for('fish') }}">Fish</a></li>
+                    {% if current_user.is_authenticated and current_user.is_seller %}
+                        <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
+                    {% endif %}
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
+                        <li><a href="{{ url_for('manage_users') }}">Manage Users</a></li>
+                        <li><a href="{{ url_for('manage_products') }}">Manage Products</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="right-nav">
+                <ul>
+                    {% if current_user.is_authenticated %}
+                        <li class="user-info">
+                            <a href="{{ url_for('edit_user') }}">
+                                <i class="fas fa-user-circle"></i>
+                                {{ current_user.first_name }} {{ current_user.last_name }}
+                            </a>
+                        </li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </nav>
     </header>
     
@@ -36,7 +48,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2024 Coral & Fish Marketplace</p>
+        <p>&copy; 2024 Corals4Cheap</p>
     </footer>
 </body>
 </html>

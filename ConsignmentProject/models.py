@@ -7,12 +7,27 @@ from DB import db,app
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'))
-
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    dob = db.Column(db.Date, nullable=False)
+    phone_number = db.Column(db.String(20), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'), nullable=False)
+    
     role = db.relationship('Role', backref='users')
+
+    @property
+    def is_admin(self):
+        return self.role_id == 3
+    
+    @property
+    def is_seller(self):
+        return self.role_id == 2
+    
+    def get_id(self):
+        return str(self.user_id)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -25,6 +40,7 @@ class Role(db.Model):
     __tablename__ = 'roles'
     role_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
+    #users = db.relationship('Users',backref='role')
 
 # Permissions model
 class Permission(db.Model):
