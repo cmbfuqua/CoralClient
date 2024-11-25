@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Corals for Sale</h2>
+<div class="item-list">
+    {% for coral in corals %}
+        <div class="item">
+            <img src="{{ coral.image_url }}" alt="{{ coral.name }}">
+            <p>{{ coral.name }} - ${{ coral.price }}</p>
+            {% if not current_user.is_admin %}
+                <span class="tooltip" title="How can I order this?">Info</span>
+            {% else %}
+                <!button onclick="location.href='{{ url_for('create_order', product_id=coral.product_id) }}'">Create Order</button>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

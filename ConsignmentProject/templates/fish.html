@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Fish for Sale</h2>
+<div class="item-list">
+    {% for fish in fish %}
+        <div class="item">
+            <img src="{{ fish.image_url }}" alt="{{ fish.name }}">
+            <p>{{ fish.name }} - ${{ fish.price }}</p>
+            {% if not current_user.is_admin %}
+                <span class="tooltip" title="How can I order this?">Info</span>
+            {% else %}
+                <!button onclick="location.href='{{ url_for('create_order', product_id=fish.product_id) }}'">Create Order</button>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

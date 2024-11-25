@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coral & Fish Marketplace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul class="left-nav">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('corals') }}">Corals</a></li>
+                <li><a href="{{ url_for('fish') }}">Fish</a></li>
+                {% if current_user.is_authenticated and current_user.is_seller %}
+                    <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
+                {% endif %}
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                    <li><a href="{{ url_for('manage_users') }}">Manage Users</a></li>
+                    <li><a href="{{ url_for('manage_products') }}">Manage Products</a></li>
+                {% endif %}
+            </ul>
+            <ul class="right-nav">
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Coral & Fish Marketplace</p>
+    </footer>
+</body>
+</html>

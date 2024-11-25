@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Welcome to Coral & Fish Marketplace</h1>
+<p>Your go-to marketplace for unique corals and fish!</p>
+
+<div>
+    <h2>Featured Corals</h2>
+    {% for product in featured_products %}
+        {% if product.item_type.name == 'Coral' %}
+            <div>
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description }}</p>
+                <p>Price: ${{ product.price }}</p>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<div>
+    <h2>Featured Fish</h2>
+    {% for product in featured_products %}
+        {% if product.item_type.name == 'Fish' %}
+            <div>
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description }}</p>
+                <p>Price: ${{ product.price }}</p>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
