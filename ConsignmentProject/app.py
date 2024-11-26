@@ -139,6 +139,20 @@ def corals():
     coral_subtypes = ItemSubtype.query.filter_by(item_type_id = 1).all()
     return render_template('corals.html', corals=corals,coral_subtypes = coral_subtypes)
 
+from flask import render_template
+
+@app.route('/about_us')
+def about_us():
+    return render_template('about_us.html')
+
+@app.route('/policy')
+def policy():
+    return render_template('policy.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
 #################################################################
 # Consignment stuff
 #################################################################
@@ -360,7 +374,7 @@ def send_order_notification(buyer_email, seller_email, product_name):
     sender = app.config['MAIL_DEFAULT_SENDER']
     
     msg = Message(subject, sender=sender, recipients=[seller_email])
-    msg.body = f"Hello, there is a new order request for {product_name}.\n\nPlease contact the buyer at {buyer_email} to arrange the sale."
+    msg.body = f"Hello, there is a new order request for {product_name}.\n\nPlease bring this product to Corals4Cheap to complete the sale."
     
     mail.send(msg)
 

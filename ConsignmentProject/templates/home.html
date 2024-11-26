@@ -14,7 +14,7 @@
             {% if not current_user.is_admin %}
                 <span class="tooltip" title="How can I order this?">Info</span>
             {% else %}
-                <!button onclick="location.href='{{ url_for('create_order', product_id=product.product_id) }}'">Create Order</button>
+                <button onclick="location.href='{{ url_for('create_order', product_id=product.product_id) }}'">Create Order</button>
             {% endif %}
             </div>
         {% endif %}
@@ -31,7 +31,7 @@
             {% if not current_user.is_admin %}
                 <span class="tooltip" title="How can I order this?">Info</span>
             {% else %}
-                <!button onclick="location.href='{{ url_for('create_order', product_id=product.product_id) }}'">Create Order</button>
+                <button onclick="location.href='{{ url_for('create_order', product_id=product.product_id) }}'">Create Order</button>
             {% endif %}
             </div>
         {% endif %}

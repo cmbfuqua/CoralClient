@@ -9,45 +9,50 @@
 </head>
 <body>
     <header>
-        <div class="banner">
-            <nav class="navbar">
-                <div class="logo">
-                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Company Logo">
-                </div>
-                <ul class="nav-links">
-                    <li><a href="{{ url_for('home') }}">Home</a></li>
-                    <li><a href="{{ url_for('corals') }}">Corals</a></li>
-                    <li><a href="{{ url_for('fish') }}">Fish</a></li>
-                    {% if current_user.is_authenticated and current_user.is_seller %}
-                        <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
-                    {% endif %}
-                    {% if current_user.is_authenticated and current_user.is_admin %}
-                        <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
-                        <li><a href="{{ url_for('manage_users') }}">Manage Users</a></li>
-                        <li><a href="{{ url_for('manage_products') }}">Manage Products</a></li>
-                    {% endif %}
-                    {% if current_user.is_authenticated %}
-                        <li class = "user-info">                            
-                            <a href ="{{ url_for('edit_user')}}">
-                                Hello, {{ current_user.first_name }}
-                            </a>
-                        </li>
-                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    {% else %}
-                        <li><a href="{{ url_for('login') }}">Login</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
-        
+        <nav class="navbar">
+            <div class="navbar-logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Company Logo">
+            </div>
+            <ul class="navbar-links">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('corals') }}">Corals</a></li>
+                <li><a href="{{ url_for('fish') }}">Fish</a></li>
+                {% if current_user.is_authenticated and current_user.is_seller %}
+                    <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
+                {% endif %}
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                    <li><a href="{{ url_for('manage_users') }}">Users</a></li>
+                    <li><a href="{{ url_for('manage_products') }}">Products</a></li>
+                {% endif %}
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('edit_user') }}">{{ current_user.first_name }}'s Account</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
     </header>
+    
     
     <main>
         {% block content %}{% endblock %}
     </main>
 
-    <footer>
-        <p>&copy; 2024 Corals4Cheap</p>
+    <footer class="site-footer">
+        <div class="footer-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Company Logo">
+        </div>
+        <div class="footer-info">
+            <p><strong>Hours of Operation:</strong><br>Monday - Friday: 9 AM - 5 PM<br>Saturday: 10 AM - 4 PM<br>Sunday: Closed</p>
+        </div>
+        <ul class="footer-links">
+            <li><a href="{{ url_for('about_us') }}">About Us</a></li>
+            <li><a href="{{ url_for('policy') }}">Policies</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
     </footer>
+    
+    
 </body>
 </html>

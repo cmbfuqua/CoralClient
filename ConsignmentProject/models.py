@@ -24,7 +24,7 @@ class User(UserMixin, db.Model):
     
     @property
     def is_seller(self):
-        return self.role_id == 2
+        return self.role_id in [2,3]
     
     def get_id(self):
         return str(self.user_id)

@@ -2,13 +2,13 @@
 :root {
     --primary-color: #0077b6; /* Ocean blue for navbar and footer */
     --secondary-color: #00b4d8; /* Vibrant aqua for buttons and links */
-    --text-color: #030303; /* White for all text */
-    --background-color: #caf0f8; /* Light seafoam for general background */
+    --text-color: #030303; /* Black for text */
+    --background-color: #caf0f8; /* Light seafoam for background */
     --card-bg-color: #ffffff; /* White for product cards */
-    --card-border-color: #90e0ef; /* Light aqua border for product cards */
+    --card-border-color: #90e0ef; /* Light aqua border for cards */
     --hover-color: #023e8a; /* Darker blue for hover effects */
     --tooltip-bg-color: #333; /* Dark background for tooltips */
-    --tooltip-text-color: #fff; /* White text for tooltips */
+    --tooltip-text-color: #fff; /* White tooltip text */
 }
 
 /* General Styles */
@@ -20,92 +20,150 @@ html, body {
     background-color: var(--background-color);
     font-family: Arial, sans-serif;
     scroll-behavior: smooth;
-}
-
-body {
     color: var(--text-color);
     text-align: center;
 }
 
-/* Main Content */
+body {
+    text-align: center;
+}
+
 main {
     flex: 1;
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    text-align: left; /* Align text to the left */
+    text-align: left; /* Left align content */
 }
 
-/* Navbar Styles */
-header {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    padding: 20px 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
+/* Navbar Styling */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    padding: 10px 40px;
+    background-color: var(--primary-color);
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
-.navbar ul {
-    list-style: none;
+.navbar-logo {
+    margin-left: 40px;
+}
+
+.navbar-logo img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    max-width: 150px;
+}
+
+.navbar-links {
     display: flex;
-    padding: 0;
+    justify-content: center;
+    flex-grow: 1;
+    list-style: none;
+    gap: 30px;
     margin: 0;
-    gap: 15px;
+    padding: 0;
 }
 
-.navbar a {
-    color: var(--text-color);
+.navbar-links li a {
     text-decoration: none;
+    color: var(--text-color);
     font-size: 1rem;
-    font-weight: bold;
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
+    font-weight: 500;
+    white-space: nowrap; /* Prevent wrapping */
+    transition: color 0.3s ease;
 }
 
-.navbar a:hover {
-    background-color: var(--hover-color);
-    color:var(--tooltip-text-color)
+.navbar-links li a:hover {
+    color: var(--tooltip-text-color);
 }
 
 /* Footer Styles */
-footer {
-    background-color: var(--primary-color);
+.site-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-color); /* Same as navbar background */
     color: var(--text-color);
-    padding: 20px 0;
-    text-align: center;
-    font-size: 1rem;
-    margin-top: auto;
+    padding: 20px 40px;
+    margin-top: auto; /* Ensures footer sticks to the bottom */
 }
 
-/* Button and Link Styles */
+.site-footer .footer-logo img {
+    height: 60px; /* Smaller logo size */
+    width: auto;
+}
+
+.site-footer .footer-info {
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.5; /* Better readability for hours */
+}
+
+.site-footer .footer-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+}
+
+.site-footer .footer-links li {
+    font-size: 0.85rem; /* Subtle font size */
+}
+
+.site-footer .footer-links a {
+    color: var(--text-color); /* Subtle text color */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.site-footer .footer-links a:hover {
+    color: var(--tooltip-text-color); /* Slight hover effect */
+}
+
+/* Responsive Design for Footer */
+@media (max-width: 768px) {
+    .site-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .site-footer .footer-info {
+        margin: 15px 0;
+    }
+
+    .site-footer .footer-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Buttons and Links */
+
 button, a {
     background-color: var(--secondary-color);
     color: var(--text-color);
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
-    text-decoration: none;
     font-size: 1rem;
+    text-decoration: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 button:hover, a:hover {
     background-color: var(--hover-color);
+    color: var(--tooltip-text-color);
 }
 
-/* Consignment Page Styles */
+/* Product Card Styles */
 .item-list {
     display: flex;
     flex-wrap: wrap;
@@ -138,10 +196,8 @@ button:hover, a:hover {
     display: inline-block;
     margin-top: 10px;
     background-color: var(--secondary-color);
-    color: var(--text-color);
     padding: 5px 10px;
     border-radius: 5px;
-    text-decoration: none;
     font-size: 0.9rem;
 }
 
@@ -149,7 +205,7 @@ button:hover, a:hover {
     background-color: var(--hover-color);
 }
 
-/* Add Consignment Form */
+/* Form Styling */
 form {
     background-color: var(--card-bg-color);
     border: 2px solid var(--card-border-color);
@@ -175,92 +231,72 @@ input, select, textarea {
     box-sizing: border-box;
 }
 
-button {
-    align-self: flex-start;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .navbar ul {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .item {
-        width: 100%;
-    }
-
-    form {
-        padding: 15px;
-    }
-}
-
 /* Table Styles */
 table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
     background-color: var(--card-bg-color);
+    border: 1px solid var(--card-border-color);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--table-border-color);
-}
-
-table thead {
-    background-color: var(--table-header-bg-color);
-    color: var(--text-color);
-    text-align: left;
-    font-size: 1rem;
 }
 
 table thead th {
     padding: 15px;
+    text-align: left;
+    background-color: var(--hover-color);
+    color: var(--tooltip-text-color);
     text-transform: uppercase;
     font-weight: bold;
-    border-bottom: 2px solid var(--table-border-color);
 }
-
-table tbody tr {
-    border-bottom: 1px solid var(--table-border-color);
-    transition: background-color 0.3s ease;
-}
-
-
 
 table tbody td {
     padding: 15px;
-    color: var(--table-text-color);
+    border-bottom: 1px solid var(--card-border-color);
 }
 
-table select {
-    padding: 5px;
-    border: 1px solid var(--table-border-color);
-    border-radius: 5px;
-    font-size: 1rem;
-    width: 100%;
+table tbody tr:hover {
+    background-color: var(--card-border-color);
 }
 
-table button {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background-color: var(--secondary-color);
-    color: var(--text-color);
-    border: none;
+table select, table button {
+    padding: 5px 10px;
+    border: 1px solid var(--card-border-color);
     border-radius: 5px;
     font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-
-/* Responsive Table */
+/* Responsive Design */
 @media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap;
+        padding: 10px 20px;
+    }
+
+    .navbar-logo {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .navbar-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .item {
+        width: 100%;
+    }
+
+    .site-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+    }
+
     table thead {
-        display: none; /* Hide table headers on small screens */
+        display: none;
     }
 
     table tbody tr {
@@ -271,91 +307,13 @@ table button {
     table tbody td {
         display: block;
         text-align: right;
-        padding: 10px;
         position: relative;
     }
 
     table tbody td::before {
-        content: attr(data-label); /* Use `data-label` attribute for labels */
+        content: attr(data-label);
         position: absolute;
         left: 10px;
         font-weight: bold;
-        text-align: left;
     }
-
-    table select, table button {
-        width: 100%;
-    }
-}
-
-/* Buttons and Links */
-button, a {
-    background-color: var(--secondary-color);
-    color: var(--text-color);
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    text-decoration: none;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button:hover, a:hover {
-    background-color: var(--hover-color);
-    color: var(--tooltip-text-color);
-}
-
-/* Ensure table action column looks clean */
-table tbody td form {
-    margin: 0; /* Remove extra margins around forms */
-    padding: 0; /* Remove padding around forms */
-    border: none; /* Remove unwanted borders around forms */
-    background: none; /* Ensure the form inherits background */
-}
-
-/* Style the dropdown to look consistent */
-table tbody td form select {
-    border: 1px solid var(--table-border-color); /* Define a clean border */
-    padding: 5px 10px; /* Add appropriate padding for dropdown */
-    font-size: 14px; /* Match font size to table */
-    background-color: #fff; /* Ensure a consistent background */
-    color: var(--table-text-color); /* Match text color to table */
-    border-radius: 4px; /* Slightly round edges for aesthetic */
-    width: 100%; /* Optional: Ensure dropdown stretches fully in small cells */
-    box-shadow: none; /* Remove any default browser shadows */
-}
-
-/* Ensure the button is clean and aligned */
-table tbody td form button {
-    margin-top: 5px; /* Add space between dropdown and button */
-    padding: 8px 12px; /* Consistent button padding */
-    font-size: 14px; /* Match table font size */
-    background-color: var(--button-bg-color); /* Match button styling */
-    color: var(--button-text-color); /* Ensure text is legible */
-    border: none; /* Remove unwanted borders */
-    border-radius: 4px; /* Optional: Rounded button edges */
-    cursor: pointer; /* Pointer cursor for interaction */
-    transition: background-color 0.3s ease; /* Smooth hover effect */
-}
-
-
-/* Align dropdown and button in a clean layout */
-table tbody td form {
-    display: flex;
-    flex-direction: column; /* Stack dropdown and button vertically */
-    gap: 5px; /* Add spacing between dropdown and button */
-    align-items: stretch; /* Stretch to fit table cell */
-}
-
-/* Override table styles that might interfere */
-table tbody td {
-    padding: 10px; /* Prevent forms from being squished */
-}
-
-.navbar .logo img {
-    height: 80px; /* Small and centered */
-    width: auto;
-    max-width: 150px;
-    object-fit: contain;
 }
