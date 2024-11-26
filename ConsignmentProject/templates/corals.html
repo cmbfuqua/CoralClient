@@ -13,13 +13,13 @@
 </div>
 <div class="item-list">
     {% for coral in corals %}
-        <div class="item">
+        <div class="item" data-item_subtype="{{coral.item_subtype_id}}">
             <img src="{{ url_for('static', filename=coral.image_url) }}" alt="{{ coral.name }}">
             <p>{{ coral.name }} - ${{ coral.price }}</p>
             {% if not current_user.is_admin %}
                 <span class="tooltip" title="How can I order this?">How To Order?</span>
             {% else %}
-                <button onclick="location.href='{{ url_for('create_order', product_id=coral.product_id) }}'">Create Order</button>
+                <!button onclick="location.href='{{ url_for('create_order', product_id=coral.product_id) }}'">Create Order</button>
             {% endif %}
         </div>
     {% endfor %}
@@ -30,7 +30,9 @@
         const items = document.querySelectorAll('.item');
     
         items.forEach(item => {
-            const itemSubtype = item.getAttribute('data-subtype');
+            const itemSubtype = item.getAttribute('data-item_subtype');
+            console.log(itemSubtype);
+            console.log(filterValue);
             if (filterValue === 'all' || itemSubtype === filterValue) {
                 item.style.display = '';
             } else {

@@ -14,7 +14,7 @@
 </div>
 <div class="item-list">
     {% for fish in fish %}
-        <div class="item">
+        <div class="item" data-subtype="{{fish.item_subtype_id}}">
             <img src="{{ url_for('static', filename=fish.image_url) }}" alt="{{ fish.name }}">
             <p>{{ fish.name }} - ${{ fish.price }}</p>
             {% if not current_user.is_admin %}
