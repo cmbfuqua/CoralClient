@@ -96,3 +96,7 @@ class Order(db.Model):
     product_pickup = db.Column(db.Date)
     payment_status = db.Column(db.String(50))
     order_status = db.Column(db.String(5),nullable=False)
+
+    product = db.relationship('ConsignmentProduct', backref='orders', lazy=True)
+    buyer = db.relationship('User', foreign_keys=[buyer_id], backref='buyer_orders', lazy=True)
+    seller = db.relationship('User', foreign_keys=[seller_id], backref='seller_orders', lazy=True)

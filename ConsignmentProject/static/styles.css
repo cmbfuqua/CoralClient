@@ -471,3 +471,64 @@ main {
         gap: 15px
     }
 }
+/* Order Status Page Styles */
+.order-status-container {
+    display: grid;
+    grid-template-areas:
+        "title title"
+        "product seller"
+        "details buyer";
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Title Centered */
+.order-status-title {
+    grid-area: title;
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+/* Product Information */
+.product-info {
+    grid-area: product;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.product-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+/* Seller Information */
+.seller-info {
+    grid-area: seller;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+/* Order Details */
+.order-details {
+    grid-area: details;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+/* Buyer Information */
+.buyer-info {
+    grid-area: buyer;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}

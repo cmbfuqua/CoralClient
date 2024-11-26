@@ -3,12 +3,13 @@ from flask_login import LoginManager, login_user, logout_user, current_user, log
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
-from config import Config
+
 from models import *
 from forms import *
 from DB import db, app
+
 import os
-import base64
+from datetime import datetime
 
 # Initialize Flask app
 
@@ -205,7 +206,8 @@ def consignment():
         flash('Product added successfully!', 'success')
         return redirect(url_for('consignment'))
 
-    user_products = ConsignmentProduct.query.filter_by(seller_id=current_user.user_id).all()
+    user_products = ConsignmentProduct.query.filter((ConsignmentProduct.seller_id == current_user.user_id) &
+                                                    ((ConsignmentProduct.order_status == 'IP') | (ConsignmentProduct.order_status =='None'))).all()
     return render_template('consignment.html', form=form, user_products=user_products)
 
 @app.route('/subcategories/<int:item_type_id>')
@@ -378,7 +380,7 @@ def create_order(product_id):
         # Notify the seller
 
         flash('Order created successfully and seller notified.', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('order_status', order_id=order.order_id))
 
     return render_template('create_order.html', product=product, form=form)
 
@@ -413,6 +415,69 @@ def search_buyer():
     ])
 
 
+@app.route('/order_status/<int:order_id>', methods=['GET', 'POST'])
+@login_required
+def order_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    product = ConsignmentProduct.query.get_or_404(order.product_id)
+    buyer = User.query.get_or_404(order.buyer_id)
+    seller = User.query.get_or_404(order.seller_id)
+
+    if request.method == 'POST':
+        # Update product dropoff
+        if 'set_dropoff' in request.form:
+            order.product_dropoff = datetime.now()
+            db.session.commit()
+
+            # Send email to the buyer
+            send_dropoff_notification(buyer, product, seller,order)
+
+        # Update product pickup
+        elif 'set_pickup' in request.form:
+            order.product_pickup = datetime.now()
+            order.order_status = 'C'  # Completed
+            db.session.commit()
+
+            # Send email to buyer and seller
+            send_pickup_notification(buyer, product, seller,order)
+
+        # Update payment status
+        elif 'payment_status' in request.form:
+            payment_status = request.form['payment_status']
+            order.payment_status = payment_status
+            db.session.commit()
+
+        # Delete order
+        elif 'delete_order' in request.form:
+            order.order_status = 'X'  # Canceled
+            product.order_status = None
+            db.session.commit()
+
+            # Send cancellation email to seller
+            send_cancellation_notification(buyer, product, seller,order)
+
+            flash('Order canceled successfully.', 'danger')
+            return redirect(url_for('all_orders'))
+
+    return render_template('order_status.html', order=order, product=product, buyer=buyer, seller=seller)
+
+@app.route('/orders', methods=['GET'])
+@login_required
+def all_orders():
+    if not current_user.is_admin:
+        flash('You do not have permission to view this page.', 'danger')
+        return redirect(url_for('home'))
+
+    # Fetch orders grouped by status
+    orders = {
+        'IP': Order.query.filter_by(order_status='IP').all(),
+        'C': Order.query.filter_by(order_status='C').all(),
+        'X': Order.query.filter_by(order_status='X').all(),
+    }
+
+    return render_template('all_orders.html', orders=orders)
+
+
 ############################################
 # utility functions
 ############################################
@@ -436,6 +501,20 @@ def send_order_notification(seller_email, product, order_number,buyer_first_name
     )
     mail.send(msg)
 
+def send_dropoff_notification(buyer, product, seller,order):
+    msg = Message("Coral Dropoff Notification", recipients=[buyer.email])
+    msg.html = render_template('dropoff_notification.html', buyer=buyer, product=product, seller=seller,order=order)
+    mail.send(msg)
+
+def send_pickup_notification(buyer, product, seller,order):
+    msg = Message("Coral Pickup Complete", recipients=[buyer.email, seller.email])
+    msg.html = render_template('pickup_notification.html', buyer=buyer, seller=seller, product=product,order=order)
+    mail.send(msg)
+
+def send_cancellation_notification(buyer, product, seller,order):
+    msg = Message("Order Canceled", recipients=[buyer.email,seller.email])
+    msg.html = render_template('cancellation_notification.html', seller=seller, product=product, buyer=buyer,order=order)
+    mail.send(msg)
 
 
 ################################################3

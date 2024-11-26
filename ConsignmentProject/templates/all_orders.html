@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}All Orders{% endblock %}
+
+{% block content %}
+<h1>All Orders</h1>
+
+<!-- Search filters -->
+<section class="order-filters">
+    <h2>Filter Orders</h2>
+    <label for="filter_order_id">Order ID:</label>
+    <input type="text" id="filter_order_id" class="form-control" placeholder="Search by Order ID">
+
+    <label for="filter_buyer_name">Buyer Name:</label>
+    <input type="text" id="filter_buyer_name" class="form-control" placeholder="Search by Buyer Name">
+</section>
+
+<!-- Order groups -->
+<section class="order-groups">
+    {% for status, status_orders in orders.items() %}
+    <h2>
+        {% if status == 'IP' %} In Progress Orders 
+        {% elif status == 'C' %} Completed Orders 
+        {% elif status == 'X' %} Canceled Orders 
+        {% endif %}
+    </h2>
+
+    {% if status_orders %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Product Name</th>
+                <th>Seller</th>
+                <th>Buyer</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="orders_{{ status }}">
+            {% for order in status_orders %}
+            <tr>
+                <td>{{ order.order_id }}</td>
+                <td>{{ order.product.name }}</td>
+                <td>{{ order.seller.first_name }} {{ order.seller.last_name }}</td>
+                <td>{{ order.buyer.first_name }} {{ order.buyer.last_name }}</td>
+                <td>{{ order.order_status }}</td>
+                <td>
+                    <a href="{{ url_for('order_status', order_id=order.order_id) }}" class="btn btn-primary">View Order</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No orders found for this status.</p>
+    {% endif %}
+    {% endfor %}
+</section>
+
+<script>
+// Dynamic filtering by Order ID and Buyer Name
+document.addEventListener('DOMContentLoaded', () => {
+    const orderIdInput = document.getElementById('filter_order_id');
+    const buyerNameInput = document.getElementById('filter_buyer_name');
+
+    // Function to filter rows dynamically
+    function filterOrders() {
+        const orderIdValue = orderIdInput.value.toLowerCase();
+        const buyerNameValue = buyerNameInput.value.toLowerCase();
+
+        // Iterate over all order tables
+        document.querySelectorAll('tbody').forEach(tbody => {
+            tbody.querySelectorAll('tr').forEach(row => {
+                const orderIdCell = row.cells[0].textContent.toLowerCase();
+                const buyerNameCell = row.cells[3].textContent.toLowerCase();
+
+                // Show or hide rows based on filter match
+                if (
+                    (orderIdCell.includes(orderIdValue) || orderIdValue === '') &&
+                    (buyerNameCell.includes(buyerNameValue) || buyerNameValue === '')
+                ) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Attach event listeners to filter inputs
+    orderIdInput.addEventListener('input', filterOrders);
+    buyerNameInput.addEventListener('input', filterOrders);
+});
+</script>
+
+{% endblock %}

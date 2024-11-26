@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Order Status - Your Store{% endblock %}
+
+{% block content %}
+<div class="order-status-container">
+    <!-- Centered Title -->
+    <h1 class="order-status-title">Order Status</h1>
+
+    <!-- Product Information -->
+    <section class="product-info">
+        <h2>Product Information</h2>
+        <img src="{{ url_for('static', filename=product.image_url) }}" alt="{{ product.name }}" class="product-image">
+        <p><strong>Name:</strong> {{ product.name }}</p>
+        <p><strong>Description:</strong> {{ product.description }}</p>
+        <p><strong>Price:</strong> ${{ product.price }}</p>
+    </section>
+
+    <!-- Seller Information -->
+    <section class="seller-info">
+        <h2>Seller Information</h2>
+        <p><strong>Seller:</strong> {{ seller.first_name }} {{ seller.last_name }}</p>
+        <p><strong>Email:</strong> {{ seller.email }}</p>
+    </section>
+
+    <!-- Order Details -->
+    <section class="order-details">
+        <h2>Order Details</h2>
+        <p><strong>Order Date:</strong> {{ order.order_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        <p><strong>Product Dropoff:</strong>
+            {% if order.product_dropoff %}
+                {{ order.product_dropoff.strftime('%Y-%m-%d %H:%M:%S') }}
+            {% else %}
+                <form method="POST">
+                    <button type="submit" name="set_dropoff" class="btn btn-secondary">Set Dropoff Date</button>
+                </form>
+            {% endif %}
+        </p>
+        <p><strong>Product Pickup:</strong>
+            {% if order.product_pickup %}
+                {{ order.product_pickup.strftime('%Y-%m-%d %H:%M:%S') }}
+            {% else %}
+                <form method="POST">
+                    <button type="submit" name="set_pickup" class="btn btn-secondary">Set Pickup Date</button>
+                </form>
+            {% endif %}
+        </p>
+        <p><strong>Payment Status:</strong> {{ order.payment_status if order.payment_status else "Not Paid" }}</p>
+        <form method="POST">
+            <label for="payment_status">Update Payment Status:</label>
+            <select name="payment_status" id="payment_status" class="form-control">
+                <option value="Not Paid" {% if order.payment_status == 'Not Paid' %}selected{% endif %}>Not Paid</option>
+                <option value="Half Paid" {% if order.payment_status == 'Half Paid' %}selected{% endif %}>Half Paid</option>
+                <option value="Full Payment" {% if order.payment_status == 'Full Payment' %}selected{% endif %}>Full Payment</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Update Payment</button>
+        </form>
+        <p><strong>Order Status:</strong> {{ order.order_status }}</p>
+        <form method="POST">
+            <button type="submit" name="delete_order" class="btn btn-danger">Delete Order</button>
+        </form>
+    </section>
+    
+    <!-- Buyer Information -->
+    <section class="buyer-info">
+        <h2>Buyer Information</h2>
+        <p><strong>Buyer:</strong> {{ buyer.first_name }} {{ buyer.last_name }}</p>
+        <p><strong>Email:</strong> {{ buyer.email }}</p>
+    </section>
+</div>
+<a href="{{ url_for('all_orders') }}" class="btn btn-secondary">Back to Orders</a>
+{% endblock %}
