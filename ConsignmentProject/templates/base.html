@@ -9,9 +9,12 @@
 </head>
 <body>
     <header>
-        <nav class="navbar">
-            <div class="left-nav">
-                <ul>
+        <div class="banner">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Company Logo">
+                </div>
+                <ul class="nav-links">
                     <li><a href="{{ url_for('home') }}">Home</a></li>
                     <li><a href="{{ url_for('corals') }}">Corals</a></li>
                     <li><a href="{{ url_for('fish') }}">Fish</a></li>
@@ -23,15 +26,10 @@
                         <li><a href="{{ url_for('manage_users') }}">Manage Users</a></li>
                         <li><a href="{{ url_for('manage_products') }}">Manage Products</a></li>
                     {% endif %}
-                </ul>
-            </div>
-            <div class="right-nav">
-                <ul>
                     {% if current_user.is_authenticated %}
-                        <li class="user-info">
-                            <a href="{{ url_for('edit_user') }}">
-                                <i class="fas fa-user-circle"></i>
-                                {{ current_user.first_name }} {{ current_user.last_name }}
+                        <li class = "user-info">                            
+                            <a href ="{{ url_for('edit_user')}}">
+                                Hello, {{ current_user.first_name }}
                             </a>
                         </li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
@@ -39,8 +37,9 @@
                         <li><a href="{{ url_for('login') }}">Login</a></li>
                     {% endif %}
                 </ul>
-            </div>
-        </nav>
+            </nav>
+        </div>
+        
     </header>
     
     <main>

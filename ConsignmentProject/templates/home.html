@@ -4,27 +4,35 @@
 <h1>Welcome to Corals4Cheap</h1>
 <p>Your go-to marketplace for unique corals and fish!</p>
 
-<div>
-    <h2>Featured Corals</h2>
+<h2>Featured Corals</h2>
+<div class="item-list">
     {% for product in featured_products %}
         {% if product.item_type.name == 'Coral' %}
-            <div>
+            <div class="item">
                 <img src="{{ url_for('static', filename=product.image_url) }}" alt="{{ product.name }}">
-                <h3>{{ product.name }}</h3>
-                <p>Price: ${{ product.price }}</p>
+            <p>{{ product.name }} - ${{ product.price }}</p>
+            {% if not current_user.is_admin %}
+                <span class="tooltip" title="How can I order this?">Info</span>
+            {% else %}
+                <!button onclick="location.href='{{ url_for('create_order', product_id=product.product_id) }}'">Create Order</button>
+            {% endif %}
             </div>
         {% endif %}
     {% endfor %}
 </div>
 
-<div>
-    <h2>Featured Fish</h2>
+<h2>Featured Fish</h2>
+    <div class="item-list">
     {% for product in featured_products %}
         {% if product.item_type.name == 'Fish' %}
-            <div>
+            <div class="item">
                 <img src="{{ url_for('static', filename=product.image_url) }}" alt="{{ product.name }}">
-                <h3>{{ product.name }}</h3>
-                <p>Price: ${{ product.price }}</p>
+            <p>{{ product.name }} - ${{ product.price }}</p>
+            {% if not current_user.is_admin %}
+                <span class="tooltip" title="How can I order this?">Info</span>
+            {% else %}
+                <!button onclick="location.href='{{ url_for('create_order', product_id=product.product_id) }}'">Create Order</button>
+            {% endif %}
             </div>
         {% endif %}
     {% endfor %}

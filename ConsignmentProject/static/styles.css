@@ -1,140 +1,361 @@
-/* General Reset */
-body {
+/* Variables for easy color customization */
+:root {
+    --primary-color: #0077b6; /* Ocean blue for navbar and footer */
+    --secondary-color: #00b4d8; /* Vibrant aqua for buttons and links */
+    --text-color: #030303; /* White for all text */
+    --background-color: #caf0f8; /* Light seafoam for general background */
+    --card-bg-color: #ffffff; /* White for product cards */
+    --card-border-color: #90e0ef; /* Light aqua border for product cards */
+    --hover-color: #023e8a; /* Darker blue for hover effects */
+    --tooltip-bg-color: #333; /* Dark background for tooltips */
+    --tooltip-text-color: #fff; /* White text for tooltips */
+}
+
+/* General Styles */
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+    scroll-behavior: smooth;
 }
 
-/* Header Styles */
+body {
+    color: var(--text-color);
+    text-align: center;
+}
+
+/* Main Content */
+main {
+    flex: 1;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: left; /* Align text to the left */
+}
+
+/* Navbar Styles */
 header {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar {
     display: flex;
-    justify-content: space-between; /* Align left and right nav on the same line */
-    align-items: center; /* Vertically align nav items */
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
-}
-
-.left-nav ul, .right-nav ul {
-    display: inline-flex; /* Align list items horizontally */
-    gap: 15px; /* Space between nav items */
-    list-style: none; /* Remove bullet points */
-    margin: 0;
-    padding: 0;
-}
-.left-nav {
-    justify-content: flex-start;
-}
-
-.right-nav {
-    justify-content: flex-end;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-}
-
-nav ul li a.active {
-    border-bottom: 2px solid #00bcd4; /* Highlight active link */
-    font-weight: bold;
-}
-
-.user-info {
-    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px; /* Space between user icon and name */
-    font-size: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
-.user-info i {
-    font-size: 22px;
-    color: white;
+.navbar ul {
+    list-style: none;
+    display: flex;
+    padding: 0;
+    margin: 0;
+    gap: 15px;
 }
 
-.user-info a {
-    color: white;
+.navbar a {
+    color: var(--text-color);
     text-decoration: none;
+    font-size: 1rem;
     font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
-.user-info a:hover {
-    color: #00bcd4; /* Highlight effect on hover */
+.navbar a:hover {
+    background-color: var(--hover-color);
+    color:var(--tooltip-text-color)
 }
 
 /* Footer Styles */
 footer {
-    background-color: #222;
-    color: #bbb;
-    padding: 15px 20px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 20px 0;
     text-align: center;
-    font-size: 14px;
+    font-size: 1rem;
+    margin-top: auto;
 }
 
-footer p {
-    margin: 0;
-}
-
-/* Tooltip Styles */
-.tooltip {
-    position: relative;
-    color: #00bcd4;
-    text-decoration: underline;
+/* Button and Link Styles */
+button, a {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 1rem;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.tooltip::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
+button:hover, a:hover {
+    background-color: var(--hover-color);
+}
+
+/* Consignment Page Styles */
+.item-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.item {
+    background-color: var(--card-bg-color);
+    border: 2px solid var(--card-border-color);
+    border-radius: 10px;
+    width: 200px;
+    text-align: center;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.item img {
+    max-width: 100%;
+    border-bottom: 2px solid var(--card-border-color);
+    margin-bottom: 10px;
+}
+
+.item p {
+    font-size: 1rem;
+    margin: 5px 0;
+}
+
+.item a {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
     padding: 5px 10px;
     border-radius: 5px;
-    font-size: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease;
+    text-decoration: none;
+    font-size: 0.9rem;
 }
 
-.tooltip:hover::after {
-    opacity: 1;
-    visibility: visible;
+.item a:hover {
+    background-color: var(--hover-color);
+}
+
+/* Add Consignment Form */
+form {
+    background-color: var(--card-bg-color);
+    border: 2px solid var(--card-border-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    font-weight: bold;
+    color: var(--hover-color);
+}
+
+input, select, textarea {
+    padding: 10px;
+    border: 1px solid var(--card-border-color);
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    align-self: flex-start;
 }
 
 /* Responsive Design */
-@media (max-width: 600px) {
-    header {
+@media (max-width: 768px) {
+    .navbar {
         flex-direction: column;
-        align-items: flex-start; /* Align items to the left on small screens */
+        align-items: flex-start;
     }
 
-    .left-nav, .right-nav {
-        flex-direction: column; /* Stack items vertically */
-        gap: 10px; /* Adjust spacing */
+    .navbar ul {
+        flex-direction: column;
+        gap: 10px;
     }
 
-    .user-info {
-        align-self: flex-end;
-        margin-top: 10px;
+    .item {
+        width: 100%;
+    }
+
+    form {
+        padding: 15px;
     }
 }
+
+/* Table Styles */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin: 20px 0;
+    background-color: var(--card-bg-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--table-border-color);
 }
-thead th {
-    background-color: #f4f4f4;
+
+table thead {
+    background-color: var(--table-header-bg-color);
+    color: var(--text-color);
     text-align: left;
-    padding: 8px;
+    font-size: 1rem;
 }
-tbody td {
-    padding: 8px;
+
+table thead th {
+    padding: 15px;
+    text-transform: uppercase;
+    font-weight: bold;
+    border-bottom: 2px solid var(--table-border-color);
 }
-form {
-    display: inline-block;
-    margin: 0;
+
+table tbody tr {
+    border-bottom: 1px solid var(--table-border-color);
+    transition: background-color 0.3s ease;
+}
+
+
+
+table tbody td {
+    padding: 15px;
+    color: var(--table-text-color);
+}
+
+table select {
+    padding: 5px;
+    border: 1px solid var(--table-border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+table button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    table thead {
+        display: none; /* Hide table headers on small screens */
+    }
+
+    table tbody tr {
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    table tbody td {
+        display: block;
+        text-align: right;
+        padding: 10px;
+        position: relative;
+    }
+
+    table tbody td::before {
+        content: attr(data-label); /* Use `data-label` attribute for labels */
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    table select, table button {
+        width: 100%;
+    }
+}
+
+/* Buttons and Links */
+button, a {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover, a:hover {
+    background-color: var(--hover-color);
+    color: var(--tooltip-text-color);
+}
+
+/* Ensure table action column looks clean */
+table tbody td form {
+    margin: 0; /* Remove extra margins around forms */
+    padding: 0; /* Remove padding around forms */
+    border: none; /* Remove unwanted borders around forms */
+    background: none; /* Ensure the form inherits background */
+}
+
+/* Style the dropdown to look consistent */
+table tbody td form select {
+    border: 1px solid var(--table-border-color); /* Define a clean border */
+    padding: 5px 10px; /* Add appropriate padding for dropdown */
+    font-size: 14px; /* Match font size to table */
+    background-color: #fff; /* Ensure a consistent background */
+    color: var(--table-text-color); /* Match text color to table */
+    border-radius: 4px; /* Slightly round edges for aesthetic */
+    width: 100%; /* Optional: Ensure dropdown stretches fully in small cells */
+    box-shadow: none; /* Remove any default browser shadows */
+}
+
+/* Ensure the button is clean and aligned */
+table tbody td form button {
+    margin-top: 5px; /* Add space between dropdown and button */
+    padding: 8px 12px; /* Consistent button padding */
+    font-size: 14px; /* Match table font size */
+    background-color: var(--button-bg-color); /* Match button styling */
+    color: var(--button-text-color); /* Ensure text is legible */
+    border: none; /* Remove unwanted borders */
+    border-radius: 4px; /* Optional: Rounded button edges */
+    cursor: pointer; /* Pointer cursor for interaction */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+
+/* Align dropdown and button in a clean layout */
+table tbody td form {
+    display: flex;
+    flex-direction: column; /* Stack dropdown and button vertically */
+    gap: 5px; /* Add spacing between dropdown and button */
+    align-items: stretch; /* Stretch to fit table cell */
+}
+
+/* Override table styles that might interfere */
+table tbody td {
+    padding: 10px; /* Prevent forms from being squished */
+}
+
+.navbar .logo img {
+    height: 80px; /* Small and centered */
+    width: auto;
+    max-width: 150px;
+    object-fit: contain;
 }
