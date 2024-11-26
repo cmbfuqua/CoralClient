@@ -1,18 +1,17 @@
-/* Variables for easy color customization */
 :root {
-    --primary-color: #0077b6; /* Ocean blue for navbar and footer */
-    --secondary-color: #00b4d8; /* Vibrant aqua for buttons and links */
-    --text-color: #030303; /* Black for text */
-    --background-color: #caf0f8; /* Light seafoam for background */
-    --card-bg-color: #ffffff; /* White for product cards */
-    --card-border-color: #90e0ef; /* Light aqua border for cards */
-    --hover-color: #023e8a; /* Darker blue for hover effects */
-    --tooltip-bg-color: #333; /* Dark background for tooltips */
-    --tooltip-text-color: #fff; /* White tooltip text */
+    --primary-color: #0077b6;
+    --secondary-color: #00b4d8;
+    --text-color: #030303;
+    --background-color: #caf0f8;
+    --card-bg-color: #fff;
+    --card-border-color: #90e0ef;
+    --hover-color: #023e8a;
+    --tooltip-bg-color: #333;
+    --tooltip-text-color: #fff
 }
 
-/* General Styles */
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
     display: flex;
@@ -21,11 +20,11 @@ html, body {
     font-family: Arial, sans-serif;
     scroll-behavior: smooth;
     color: var(--text-color);
-    text-align: center;
+    text-align: center
 }
 
 body {
-    text-align: center;
+    text-align: center
 }
 
 main {
@@ -33,39 +32,74 @@ main {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    text-align: left; /* Left align content */
+    text-align: left
 }
 
-/* Navbar Styling */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--card-bg-color);
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    border: 1px solid var(--card-border-color);
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000
+}
+
+.dropdown-menu li {
+    padding: 5px 20px
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: background-color .3s ease
+}
+
+.dropdown-menu li a:hover {
+    background-color: var(--hover-color);
+    color: var(--tooltip-text-color)
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block
+}
+
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 40px;
     background-color: var(--primary-color);
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1)
 }
 
 .navbar-logo {
-    margin-left: 40px;
+    margin-left: 40px
 }
 
 .navbar-logo img {
     height: 60px;
     width: auto;
     object-fit: contain;
-    max-width: 150px;
+    max-width: 150px
 }
 
 .navbar-links {
+    list-style: none;
     display: flex;
     justify-content: center;
     flex-grow: 1;
     list-style: none;
     gap: 30px;
     margin: 0;
-    padding: 0;
+    padding: 0
 }
 
 .navbar-links li a {
@@ -73,34 +107,33 @@ main {
     color: var(--text-color);
     font-size: 1rem;
     font-weight: 500;
-    white-space: nowrap; /* Prevent wrapping */
-    transition: color 0.3s ease;
+    white-space: nowrap;
+    transition: color .3s ease
 }
 
 .navbar-links li a:hover {
-    color: var(--tooltip-text-color);
+    color: var(--tooltip-text-color)
 }
 
-/* Footer Styles */
 .site-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--primary-color); /* Same as navbar background */
+    background-color: var(--primary-color);
     color: var(--text-color);
     padding: 20px 40px;
-    margin-top: auto; /* Ensures footer sticks to the bottom */
+    margin-top: auto
 }
 
 .site-footer .footer-logo img {
-    height: 60px; /* Smaller logo size */
-    width: auto;
+    height: 60px;
+    width: auto
 }
 
 .site-footer .footer-info {
     text-align: center;
-    font-size: 0.9rem;
-    line-height: 1.5; /* Better readability for hours */
+    font-size: .9rem;
+    line-height: 1.5
 }
 
 .site-footer .footer-links {
@@ -108,67 +141,65 @@ main {
     display: flex;
     gap: 20px;
     padding: 0;
-    margin: 0;
+    margin: 0
 }
 
 .site-footer .footer-links li {
-    font-size: 0.85rem; /* Subtle font size */
+    font-size: .85rem
 }
 
 .site-footer .footer-links a {
-    color: var(--text-color); /* Subtle text color */
+    color: var(--text-color);
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color .3s ease
 }
 
 .site-footer .footer-links a:hover {
-    color: var(--tooltip-text-color); /* Slight hover effect */
+    color: var(--tooltip-text-color)
 }
 
-/* Responsive Design for Footer */
-@media (max-width: 768px) {
+@media(max-width:768px) {
     .site-footer {
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 20px;
+        padding: 20px
     }
 
     .site-footer .footer-info {
-        margin: 15px 0;
+        margin: 15px 0
     }
 
     .site-footer .footer-links {
         flex-direction: column;
-        gap: 10px;
+        gap: 10px
     }
 }
 
-/* Buttons and Links */
-
-button, a {
+button,
+a {
     background-color: var(--secondary-color);
     color: var(--text-color);
-    border: none;
+    border: 0;
     border-radius: 5px;
     padding: 10px 20px;
     font-size: 1rem;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color .3s ease
 }
 
-button:hover, a:hover {
+button:hover,
+a:hover {
     background-color: var(--hover-color);
-    color: var(--tooltip-text-color);
+    color: var(--tooltip-text-color)
 }
 
-/* Product Card Styles */
 .item-list {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    justify-content: center;
+    justify-content: center
 }
 
 .item {
@@ -178,18 +209,18 @@ button:hover, a:hover {
     width: 200px;
     text-align: center;
     padding: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1)
 }
 
 .item img {
     max-width: 100%;
     border-bottom: 2px solid var(--card-border-color);
-    margin-bottom: 10px;
+    margin-bottom: 10px
 }
 
 .item p {
     font-size: 1rem;
-    margin: 5px 0;
+    margin: 5px 0
 }
 
 .item a {
@@ -198,14 +229,13 @@ button:hover, a:hover {
     background-color: var(--secondary-color);
     padding: 5px 10px;
     border-radius: 5px;
-    font-size: 0.9rem;
+    font-size: .9rem
 }
 
 .item a:hover {
-    background-color: var(--hover-color);
+    background-color: var(--hover-color)
 }
 
-/* Form Styling */
 form {
     background-color: var(--card-bg-color);
     border: 2px solid var(--card-border-color);
@@ -215,30 +245,31 @@ form {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 15px
 }
 
 label {
     font-weight: bold;
-    color: var(--hover-color);
+    color: var(--hover-color)
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
     padding: 10px;
     border: 1px solid var(--card-border-color);
     border-radius: 5px;
     width: 100%;
-    box-sizing: border-box;
+    box-sizing: border-box
 }
 
-/* Table Styles */
 table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
     background-color: var(--card-bg-color);
     border: 1px solid var(--card-border-color);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1)
 }
 
 table thead th {
@@ -247,73 +278,206 @@ table thead th {
     background-color: var(--hover-color);
     color: var(--tooltip-text-color);
     text-transform: uppercase;
-    font-weight: bold;
+    font-weight: bold
 }
 
 table tbody td {
     padding: 15px;
-    border-bottom: 1px solid var(--card-border-color);
+    border-bottom: 1px solid var(--card-border-color)
 }
 
 table tbody tr:hover {
-    background-color: var(--card-border-color);
+    background-color: var(--card-border-color)
 }
 
-table select, table button {
+table select,
+table button {
     padding: 5px 10px;
     border: 1px solid var(--card-border-color);
     border-radius: 5px;
-    font-size: 0.9rem;
+    font-size: .9rem
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+@media(max-width:768px) {
     .navbar {
         flex-wrap: wrap;
-        padding: 10px 20px;
+        padding: 10px 20px
     }
 
     .navbar-logo {
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 10px
     }
 
     .navbar-links {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 15px;
+        gap: 15px
     }
 
     .item {
-        width: 100%;
+        width: 100%
     }
 
     .site-footer {
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 20px;
+        padding: 20px
     }
 
     table thead {
-        display: none;
+        display: none
     }
 
     table tbody tr {
         display: block;
-        margin-bottom: 15px;
+        margin-bottom: 15px
     }
 
     table tbody td {
         display: block;
         text-align: right;
-        position: relative;
+        position: relative
     }
 
     table tbody td::before {
         content: attr(data-label);
         position: absolute;
         left: 10px;
-        font-weight: bold;
+        font-weight: bold
+    }
+}
+
+:root {
+    --primary-color: #0077b6;
+    --secondary-color: #00b4d8;
+    --text-color: #030303;
+    --background-color: #caf0f8;
+    --card-bg-color: #fff;
+    --card-border-color: #90e0ef;
+    --hover-color: #023e8a;
+    --tooltip-bg-color: #333;
+    --tooltip-text-color: #fff;
+    --dropdown-bg-color: var(--card-bg-color);
+    --dropdown-hover-bg-color: var(--hover-color)
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+    font-family: Arial, sans-serif;
+    scroll-behavior: smooth;
+    color: var(--text-color);
+    text-align: center
+}
+
+main {
+    flex: 1;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: left
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 40px;
+    background-color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1)
+}
+
+.navbar-logo {
+    margin-left: 40px
+}
+
+.navbar-logo img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    max-width: 150px
+}
+
+.navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    margin: 0;
+    padding: 0
+}
+
+.navbar-links li {
+    position: relative
+}
+
+.navbar-links a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: color .3s ease, background-color .3s ease
+}
+
+.navbar-links a:hover {
+    color: var(--tooltip-text-color);
+    background-color: var(--hover-color)
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--dropdown-bg-color);
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    border: 1px solid var(--card-border-color);
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000
+}
+
+.dropdown-menu li {
+    padding: 5px 20px
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: var(--text-color);
+    border-radius: 5px;
+    transition: background-color .3s ease, color .3s ease
+}
+
+.dropdown-menu li a:hover {
+    background-color: var(--dropdown-hover-bg-color);
+    color: var(--tooltip-text-color)
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block
+}
+
+@media(max-width:768px) {
+    .navbar {
+        flex-wrap: wrap;
+        padding: 10px 20px
+    }
+
+    .navbar-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px
     }
 }
