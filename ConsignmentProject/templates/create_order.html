@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Create Order - Your Store{% endblock %}
+
+{% block content %}
+<h1>Create Order</h1>
+
+<!-- Display product information -->
+<section class="product-info">
+    <h2>Product Details</h2>
+    <p><strong>Name:</strong> {{ product.name }}</p>
+    <p><strong>Description:</strong> {{ product.description }}</p>
+    <p><strong>Price:</strong> ${{ product.price }}</p>
+</section>
+
+<!-- Display seller information -->
+<section class="seller-info">
+    <h2>Seller Details</h2>
+    <p><strong>Seller:</strong> {{ product.seller.first_name }} {{ product.seller.last_name }}</p>
+    <p><strong>Email:</strong> {{ product.seller.email }}</p>
+</section>
+
+<!-- Display buyer information -->
+<section class="buyer-info">
+    <h2>Buyer Details</h2>
+    <p id="buyer_name"><strong>Name:</strong> N/A</p>
+    <p id="buyer_email"><strong>Email:</strong> N/A</p>
+    <p id="buyer_phone"><strong>Phone:</strong> N/A</p>
+</section>
+
+<!-- Buyer Search -->
+<section class="buyer-search">
+    <h2>Search Buyer</h2>
+    <label for="buyer_first_name">Buyer First Name:</label>
+    <input type="text" id="buyer_first_name" class="form-control">
+
+    <label for="buyer_last_name">Buyer Last Name:</label>
+    <input type="text" id="buyer_last_name" class="form-control">
+
+    <button type="button" class="btn btn-primary" onclick="searchBuyer()">Search</button>
+
+    <h3>Search Results:</h3>
+    <ul id="buyer_results"></ul>
+</section>
+
+<!-- Order Creation -->
+<section class="order-creation">
+    <h2>Create Order</h2>
+
+    <!-- Form for order creation -->
+    <form method="POST" action="{{ url_for('create_order', product_id=product.product_id) }}">
+        {{ form.hidden_tag() }} <!-- CSRF token -->
+    
+        <!-- Buyer Selection -->
+        <div class="form-group">
+            <label for="buyer_id">Selected Buyer:</label>
+            {{ form.buyer_id(class="form-control") }}
+        </div>
+    
+        <button type="submit" class="btn btn-primary">Create Order</button>
+    </form>
+    
+</section>
+
+<a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Home</a>
+
+<script>
+    function searchBuyer() {
+        const firstName = document.getElementById('buyer_first_name').value.trim();  // Buyer first name
+        const lastName = document.getElementById('buyer_last_name').value.trim();    // Buyer last name
+        const buyerList = document.getElementById('buyer_results'); // Buyer list container
+        console.log(`Searching for buyers with first name: ${firstName} and last name: ${lastName}`);
+
+        // Only perform search if at least one of the fields is filled
+        if (!firstName && !lastName) {
+            alert("Please enter a first name or a last name.");
+            return;
+        }
+
+        // Construct the search URL with the query parameters
+        fetch(`/search_buyer?first_name=${firstName}&last_name=${lastName}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch buyers.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                buyerList.innerHTML = ''; // Clear existing buyer list
+
+                if (data.length === 0) {
+                    buyerList.innerHTML = '<p>No buyers found.</p>';
+                } else {
+                    // Loop through the returned data and append buyer information with "Select" button
+                    data.forEach(buyer => {
+                        const buyerItem = document.createElement('li');
+                        buyerItem.classList.add('buyer-item');
+                        buyerItem.innerHTML = `
+                            <p><strong>Name:</strong> ${buyer.first_name} ${buyer.last_name}</p>
+                            <p><strong>Email:</strong> ${buyer.email}</p>
+                            <p><strong>Phone:</strong> ${buyer.phone_number || 'N/A'}</p>
+                            <button class="btn btn-success" onclick="selectBuyer(${buyer.user_id}, '${buyer.first_name}', '${buyer.last_name}', '${buyer.email}', '${buyer.phone_number}')">Select</button>
+                        `;
+                        buyerList.appendChild(buyerItem);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching buyers:', error);
+                alert('Could not search for buyers. Please try again.');
+            });
+    }
+
+    function selectBuyer(userId, firstName, lastName, email, phone) {
+        // Set the selected buyer details in the Buyer Information section
+        document.getElementById('buyer_name').innerHTML = `<strong>Name:</strong> ${firstName} ${lastName}`;
+        document.getElementById('buyer_email').innerHTML = `<strong>Email:</strong> ${email}`;
+        document.getElementById('buyer_phone').innerHTML = `<strong>Phone:</strong> ${phone || 'N/A'}`;
+
+        // Populate the buyer selection dropdown in the order form
+        const buyerSelect = document.getElementById('buyer_id');
+        const newOption = document.createElement('option');
+        newOption.value = userId;
+        newOption.textContent = `${firstName} ${lastName} - ${email}`;
+        buyerSelect.innerHTML = ''; // Clear any previous selection
+        buyerSelect.appendChild(newOption);
+    }
+</script>
+
+{% endblock %}

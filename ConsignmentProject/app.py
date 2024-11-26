@@ -5,9 +5,10 @@ from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from config import Config
 from models import *
-from forms import RegistrationForm, LoginForm, ConsignmentForm,EditUserForm
+from forms import *
 from DB import db, app
 import os
+import base64
 
 # Initialize Flask app
 
@@ -194,7 +195,8 @@ def consignment():
             item_type_id=form.item_type.data,
             item_subtype_id=form.item_subtype.data,
             image_url=image_url,
-            seller_id=current_user.user_id
+            seller_id=current_user.user_id,
+            order_status='None'
         )
         print('saving product')
         db.session.add(product)
@@ -295,31 +297,6 @@ def update_featured(product_id):
     return jsonify({'message': 'Featured status updated successfully.'})
 
 
-# Creating an order (admin only)
-@app.route('/create_order/<int:product_id>', methods=['POST'])
-@login_required
-def create_order(product_id):
-    if not current_user.is_admin:
-        flash('You do not have permission to perform this action.', 'danger')
-        return redirect(url_for('home'))
-    
-    product = ConsignmentProduct.query.get_or_404(product_id)
-    buyer_id = request.form.get('buyer_id')
-
-    if not buyer_id:
-        flash('Buyer information is required.', 'danger')
-        return redirect(url_for('search'))
-
-    order = Order(buyer_id=buyer_id, seller_id=product.seller_id, product_id=product.product_id)
-    db.session.add(order)
-    db.session.commit()
-
-    # Notify the seller
-    send_order_notification(product.seller.email, product)
-
-    flash('Order created successfully and seller notified.', 'success')
-    return redirect(url_for('home'))
-
 # Account management for all users
 @app.route('/account')
 @login_required
@@ -361,24 +338,110 @@ def manage_users():
     roles = Role.query.all()  # Get all roles (e.g., user, seller, admin)
     return render_template('manage_users.html', users=users, roles=roles)
 
+###################################################
+# Creating Orders
+###################################################
+# Creating an order (admin only)
+@app.route('/create_order/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def create_order(product_id):
 
-############################################33
+    form = CreateOrderForm()
+    # Fetch product information
+    product = ConsignmentProduct.query.get_or_404(product_id)
+
+    # Ensure only admins can access
+    if not current_user.is_admin:
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('home'))
+
+    # Fetch buyers to populate the select field
+    buyers = User.query.all()  # You can add filters if needed to only select buyers
+    form.buyer_id.choices = [(buyer.user_id, f"{buyer.first_name} {buyer.last_name}") for buyer in buyers]
+
+    if form.validate_on_submit():
+        # Handle order creation
+        buyer_id = form.buyer_id.data
+        buyer = User.query.filter_by(user_id = buyer_id).first()
+        # Create the order
+        order = Order(
+            product_id=product.product_id,
+            seller_id=product.seller_id,
+            buyer_id=buyer_id,
+            order_status='IP'
+        )
+        db.session.add(order)
+        product.order_status = 'IP'
+        db.session.commit()
+        send_order_notification(product.seller.email, product, order.order_id, buyer.first_name, buyer.last_name)
+
+        # Notify the seller
+
+        flash('Order created successfully and seller notified.', 'success')
+        return redirect(url_for('home'))
+
+    return render_template('create_order.html', product=product, form=form)
+
+
+@app.route('/search_buyer', methods=['GET'])
+@login_required
+def search_buyer():
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized access'}), 403
+
+    first_name = request.args.get('first_name', '').strip()
+    last_name = request.args.get('last_name', '').strip()
+
+    if not first_name and not last_name:
+        return jsonify([])  # Return empty list if no query is provided
+
+    # Search for users matching either the first or last name
+    buyers = User.query.filter(
+        (User.first_name.ilike(f'%{first_name}%')) & (User.last_name.ilike(f'%{last_name}%'))
+    ).all()
+
+    # Return matching buyers as JSON
+    return jsonify([
+        {
+            'user_id': buyer.user_id,
+            'first_name': buyer.first_name,
+            'last_name': buyer.last_name,
+            'email': buyer.email,
+            'phone_number':buyer.phone_number
+        }
+        for buyer in buyers
+    ])
+
+
+############################################
 # utility functions
 ############################################
 def allowed_file(filename):
     
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def send_order_notification(buyer_email, seller_email, product_name):
-    subject = f"New Order Request for {product_name}"
-    sender = app.config['MAIL_DEFAULT_SENDER']
+def send_order_notification(seller_email, product, order_number,buyer_first_name,buyer_last_name):
+
     
-    msg = Message(subject, sender=sender, recipients=[seller_email])
-    msg.body = f"Hello, there is a new order request for {product_name}.\n\nPlease bring this product to Corals4Cheap to complete the sale."
-    
+    msg = Message(
+        subject="New Order Created",
+        recipients=[seller_email],
+        html=render_template(
+            'order_notification_email.html',  # Use an HTML template for the email body
+            product=product,
+            order_id=order_number,
+            buyer_first_name=buyer_first_name,
+            buyer_last_name=buyer_last_name,
+        )
+    )
     mail.send(msg)
 
-# Print out all registered routes for debugging purposes
+
+
+################################################3
+# debug routes
+#################################################
+
 
 if __name__ == '__main__':
     app.run(debug=True)

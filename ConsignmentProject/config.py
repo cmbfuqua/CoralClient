@@ -17,13 +17,13 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
-    #MAIL_SERVER = 'smtp.gmail.com'
-    #MAIL_PORT = 587
-    #MAIL_USE_TLS = True
-    #MAIL_USE_SSL = False
-    #MAIL_USERNAME = 'your_gmail_username@gmail.com'
-    #MAIL_PASSWORD = 'your_gmail_password'
-    #MAIL_DEFAULT_SENDER = 'your_gmail_username@gmail.com'
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = 'Corals4CheapAutomated@gmail.com'
+    MAIL_PASSWORD = 'wpfm dgyk gkku frih'
+    MAIL_DEFAULT_SENDER = 'Corals4CheapAutomated@gmail.com'
 
 
 

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Order Created</title>
+</head>
+<body>
+    <h1>New Order for Product: {{ product.name }}</h1>
+    <p>Order ID: {{ order_id }}</p>
+    <p>Buyer: {{ buyer_first_name }} {{ buyer_last_name }}</p>
+    
+    <p><strong>Product Details:</strong></p>
+    <p>Name: {{ product.name }}</p>
+    <p>Description: {{ product.description }}</p>
+    <p>Price: ${{ product.price }}</p>
+
+    <p>Please bring this item into Corals4Cheap within the next 48 hours.</p>
+    <p>Thank you for your business!</p>
+
+    <p>NOTE: this is an automated email and is not monitored.</p>
+    <p>If you need to reach us, please give us a call or stop by the store.</p>
+
+</body>
+</html>

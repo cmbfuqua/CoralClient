@@ -17,11 +17,16 @@
         <div class="item" data-subtype="{{fish.item_subtype_id}}">
             <img src="{{ url_for('static', filename=fish.image_url) }}" alt="{{ fish.name }}">
             <p>{{ fish.name }} - ${{ fish.price }}</p>
-            {% if not current_user.is_admin %}
+            {% if fish.order_status == 'IP' %}
+                <span>Item on hold</span>
+            {% elif not current_user.is_admin %}
                 <span class="tooltip" title="How can I order this?">Info</span>
             {% else %}
-                <!button onclick="location.href='{{ url_for('create_order', product_id=fish.product_id) }}'">Create Order</button>
+                <form action="{{ url_for('create_order', product_id=fish.product_id) }}" method="post">
+                    <button type="submit">Create Order</button>
+                </form>
             {% endif %}
+
         </div>
     {% endfor %}
 </div>

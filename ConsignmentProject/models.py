@@ -79,6 +79,7 @@ class ConsignmentProduct(db.Model):
     item_type_id = db.Column(db.Integer, db.ForeignKey('item_types.item_type_id'))
     item_subtype_id = db.Column(db.Integer, db.ForeignKey('item_subtypes.item_subtype_id'))
     seller_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    order_status = db.Column(db.String(5),nullable=False)
 
     item_type = db.relationship('ItemType', backref='consignment_products', lazy=True)
     item_subtype = db.relationship('ItemSubtype', backref='consignment_products', lazy=True)
@@ -91,3 +92,7 @@ class Order(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     seller_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     order_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    product_dropoff = db.Column(db.Date)
+    product_pickup = db.Column(db.Date)
+    payment_status = db.Column(db.String(50))
+    order_status = db.Column(db.String(5),nullable=False)
