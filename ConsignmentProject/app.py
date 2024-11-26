@@ -168,9 +168,10 @@ def consignment():
             filename = secure_filename(image.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             image.save(upload_path)
-            image_url = f"/static/uploads/{filename}"
+            image_url = f"uploads/{filename}"  # Store the relative path
         else:
             image_url = None
+
 
         product = ConsignmentProduct(
             name=form.name.data,
@@ -199,9 +200,8 @@ def get_subcategories(item_type_id):
 @app.route('/consignment/edit/<int:item_id>', methods=['GET', 'POST'])
 @login_required
 def edit_item(item_id):
-    product = ConsignmentProduct.query.get_or_404(item_id)
-
-    if current_user.role_id not in [2, 3] or product.seller_id != current_user.user_id:
+    product = ConsignmentProduct.query.filter_by(product_id = item_id).first()
+    if not (current_user.is_admin or product.seller_id == current_user.user_id):
         flash('You do not have permission to edit this item.', 'danger')
         return redirect(url_for('consignment'))
 
@@ -261,6 +261,25 @@ def manage_products():
 
     products = ConsignmentProduct.query.all()
     return render_template('manage_products.html', products=products)
+
+from flask import request, jsonify
+
+@app.route('/update_featured/<int:product_id>', methods=['POST'])
+def update_featured(product_id):
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    data = request.get_json()
+    featured = data.get('featured')
+
+    if featured is None:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    product = ConsignmentProduct.query.get_or_404(product_id)
+    product.featured = bool(featured)
+    db.session.commit()
+    return jsonify({'message': 'Featured status updated successfully.'})
+
 
 # Creating an order (admin only)
 @app.route('/create_order/<int:product_id>', methods=['POST'])

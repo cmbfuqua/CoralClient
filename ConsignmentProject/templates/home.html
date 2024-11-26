@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Welcome to Coral & Fish Marketplace</h1>
+<h1>Welcome to Corals4Cheap</h1>
 <p>Your go-to marketplace for unique corals and fish!</p>
 
 <div>
@@ -9,8 +9,8 @@
     {% for product in featured_products %}
         {% if product.item_type.name == 'Coral' %}
             <div>
+                <img src="{{ url_for('static', filename=product.image_url) }}" alt="{{ product.name }}">
                 <h3>{{ product.name }}</h3>
-                <p>{{ product.description }}</p>
                 <p>Price: ${{ product.price }}</p>
             </div>
         {% endif %}
@@ -22,8 +22,8 @@
     {% for product in featured_products %}
         {% if product.item_type.name == 'Fish' %}
             <div>
+                <img src="{{ url_for('static', filename=product.image_url) }}" alt="{{ product.name }}">
                 <h3>{{ product.name }}</h3>
-                <p>{{ product.description }}</p>
                 <p>Price: ${{ product.price }}</p>
             </div>
         {% endif %}

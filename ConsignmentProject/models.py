@@ -80,6 +80,9 @@ class ConsignmentProduct(db.Model):
     item_subtype_id = db.Column(db.Integer, db.ForeignKey('item_subtypes.item_subtype_id'))
     seller_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 
+    item_type = db.relationship('ItemType', backref='consignment_products', lazy=True)
+    item_subtype = db.relationship('ItemSubtype', backref='consignment_products', lazy=True)
+    seller = db.relationship('User',backref = 'consignment_products',lazy=True)
 # Order model
 class Order(db.Model):
     __tablename__ = 'orders'
