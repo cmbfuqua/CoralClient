@@ -3,8 +3,9 @@ from DB import db,app
 from datetime import datetime
 
 class MaintenanceVisit(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    __tablename__ = 'maintenance_visits'
+    visit_id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     before_picture = db.Column(db.String(255))
     ammonia = db.Column(db.Float)
     nitrite = db.Column(db.Float)
@@ -22,7 +23,7 @@ class MaintenanceVisit(db.Model):
 class Bill(db.Model):
     __tablename__ = 'Bill'
     id = db.Column(db.Integer, primary_key=True)
-    visit_id = db.Column(db.Integer, db.ForeignKey('MaintenanceVisit.id'), nullable=False)
+    visit_id = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     is_paid = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now())

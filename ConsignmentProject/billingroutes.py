@@ -125,7 +125,7 @@ def create_maintenance_visit():
     
     form = MaintenanceVisitForm()
     form.customer_id.choices = [
-        (user.id, f"{user.first_name} {user.last_name}")
+        (user.user_id, f"{user.first_name} {user.last_name}")
         for user in User.query.filter_by(is_maintenance=True).all()
     ]
     
@@ -148,8 +148,10 @@ def create_maintenance_visit():
         db.session.add(visit)
         db.session.commit()
         flash("Maintenance visit created.")
-        return redirect(url_for('billing/customer_management'))
-    
+        mcustomers = User.query.filter_by(is_maintenance=True).all()
+        return render_template('billing/customer_management.html',maintenance_customer = mcustomers)
+    if not form.validate_on_submit():
+        print(form.errors)
     return render_template('billing/create_maintenance_visit.html', form=form)
 
 # --- View Maintenance Logs ---
