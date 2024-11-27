@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Maintenance Report</h2>
+    <hr>
+
+    <h3>Visit Details</h3>
+    <p><strong>Customer ID:</strong> {{ visit.customer_id }}</p>
+    <p><strong>Date of Visit:</strong> {{ visit.date_of_visit.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+    <p><strong>Ammonia:</strong> {{ visit.ammonia }}</p>
+    <p><strong>Nitrite:</strong> {{ visit.nitrite }}</p>
+    <p><strong>Nitrate:</strong> {{ visit.nitrate }}</p>
+    <p><strong>pH:</strong> {{ visit.ph }}</p>
+    <p><strong>Phosphates:</strong> {{ visit.phosphates }}</p>
+    <p><strong>Calcium:</strong> {{ visit.calcium }}</p>
+    <p><strong>Magnesium:</strong> {{ visit.magnesium }}</p>
+    <p><strong>Alkalinity:</strong> {{ visit.alkalinity }}</p>
+
+    {% if visit.notes %}
+        <p><strong>Notes:</strong> {{ visit.notes }}</p>
+    {% endif %}
+    {% if visit.recommendations %}
+        <p><strong>Recommendations:</strong> {{ visit.recommendations }}</p>
+    {% endif %}
+
+    <h3>Pictures</h3>
+    <div>
+        {% if visit.before_picture %}
+            <p><strong>Before Picture:</strong></p>
+            <img src="{{ url_for('static', filename=visit.before_picture) }}" alt="Before Picture" style="max-width: 300px;">
+        {% else %}
+            <p>No before picture available.</p>
+        {% endif %}
+    </div>
+    <div>
+        {% if visit.after_picture %}
+            <p><strong>After Picture:</strong></p>
+            <img src="{{ url_for('static', filename=visit.after_picture) }}" alt="After Picture" style="max-width: 300px;">
+        {% else %}
+            <p>No after picture available.</p>
+        {% endif %}
+    </div>
+
+    {% if visit.bill %}
+        <hr>
+        <h3>Billing Information</h3>
+        <p><strong>Total Amount:</strong> ${{ "{:.2f}".format(visit.bill.total_amount) }}</p>
+        <p><strong>Paid:</strong> {{ "Yes" if visit.bill.is_paid else "No" }}</p>
+        <p><strong>Created At:</strong> {{ visit.bill.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        {% if visit.bill.paid_at %}
+            <p><strong>Paid At:</strong> {{ visit.bill.paid_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        {% endif %}
+        {% if visit.bill.notes %}
+            <p><strong>Billing Notes:</strong> {{ visit.bill.notes }}</p>
+        {% endif %}
+
+        {% if visit.bill.line_items %}
+            <h4>Line Items</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in visit.bill.line_items %}
+                        <tr>
+                            <td>{{ item.description }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ "{:.2f}".format(item.unit_price) }}</td>
+                            <td>${{ "{:.2f}".format(item.total_price) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% else %}
+        <p><strong>Billing Information:</strong> No bill available for this visit.</p>
+    {% endif %}
+{% endblock %}

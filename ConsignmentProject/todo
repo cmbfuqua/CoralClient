@@ -1,1 +1,3 @@
-start work on billing project
+No bill is created when the maintenance is created
+pictures not being stored when uploaded through visit creation. 
+    create the folder structure as billing/{customerName}/photo

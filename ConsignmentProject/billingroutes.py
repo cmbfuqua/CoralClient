@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
+import os
 
 from models import User
 from billingmodels import *
@@ -130,9 +132,27 @@ def create_maintenance_visit():
     ]
     
     if form.validate_on_submit():
+        # save images
+        imagepre = form.before_picture.data
+        imagepost = form.after_picture.data
+        if imagepre:
+            filename = secure_filename(imagepre.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing', filename)
+            imagepre.save(upload_path)
+            imagepre_url = f"uploads/billing/{filename}" 
+        else:
+            imagepre_url = None
+        if imagepost:
+            filename = secure_filename(imagepost.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing', filename)
+            imagepost.save(upload_path)
+            imagepost_url = f"uploads/billing/{filename}" 
+        else:
+            imagepost_url = None
+        
         visit = MaintenanceVisit(
             customer_id=form.customer_id.data,
-            before_picture=form.before_picture.data.filename,
+            before_picture=imagepre_url,
             ammonia=form.ammonia.data,
             nitrite=form.nitrite.data,
             nitrate=form.nitrate.data,
@@ -143,13 +163,13 @@ def create_maintenance_visit():
             alkalinity=form.alkalinity.data,
             notes=form.notes.data,
             recommendations=form.recommendations.data,
-            after_picture=form.after_picture.data.filename
+            after_picture=imagepost_url
         )
         db.session.add(visit)
         db.session.commit()
         flash("Maintenance visit created.")
-        mcustomers = User.query.filter_by(is_maintenance=True).all()
-        return render_template('billing/customer_management.html',maintenance_customer = mcustomers)
+        maintenance_customers = User.query.filter_by(is_maintenance=True).all()
+        return render_template('billing/customer_management.html', maintenance_customers=maintenance_customers)
     if not form.validate_on_submit():
         print(form.errors)
     return render_template('billing/create_maintenance_visit.html', form=form)
