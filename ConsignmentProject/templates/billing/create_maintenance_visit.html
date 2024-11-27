@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Create Maintenance Visit</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ form.customer_id.label }} {{ form.customer_id() }}
+        <label>Before Picture</label> {{ form.before_picture() }}
+        <label>Ammonia</label> {{ form.ammonia() }}
+        <label>Nitrite</label> {{ form.nitrite() }}
+        <label>Nitrate</label> {{ form.nitrate() }}
+        <label>pH</label> {{ form.ph() }}
+        <label>Phosphates</label> {{ form.phosphates() }}
+        <label>Calcium</label> {{ form.calcium() }}
+        <label>Magnesium</label> {{ form.magnesium() }}
+        <label>Alkalinity</label> {{ form.alkalinity() }}
+        <label>Notes</label> {{ form.notes() }}
+        <label>Recommendations</label> {{ form.recommendations() }}
+        <label>After Picture</label> {{ form.after_picture() }}
+        {{ form.submit() }}
+    </form>
+{% endblock %}

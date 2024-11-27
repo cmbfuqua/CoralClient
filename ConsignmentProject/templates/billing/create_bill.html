@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Create Bill</h1>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.notes.label }}<br>
+        {{ form.notes(rows=5) }}
+    </div>
+    <div>
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+{% endblock %}

@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
     dob = db.Column(db.Date, nullable=False)
     phone_number = db.Column(db.String(20), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'), nullable=False)
+    is_maintenance = db.Column(db.Boolean,nullable=False,default=0)
     
     role = db.relationship('Role', backref='users')
 

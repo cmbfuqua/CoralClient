@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add Maintenance Customer</h2>
+<div class="form-group">
+    <label for="search_customer">Search Customer:</label>
+    <input type="text" id="search_customer" name="search_customer" placeholder="Search by first or last name" class="form-control">
+</div>
+
+<table id="customer-table" class="customer-table">
+    <thead>
+        <tr>
+            <th style="width: 100px;">Name</th>
+            <th style="width: 100px;">Phone</th>
+            <th style="width: 300px;">Email</th>
+            <th>Select</th>
+        </tr>
+    </thead>
+    <tbody id="customer-results">
+        <!-- Results will populate here -->
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div id="success-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <p id="success-message"></p>
+    </div>
+</div>
+
+<script>
+    // JavaScript to handle search, selection, and submission as discussed
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('search_customer');
+        const customerTable = document.getElementById('customer-table');
+        const customerResults = document.getElementById('customer-results');
+        const modal = document.getElementById('success-modal');
+        const successMessage = document.getElementById('success-message');
+
+        searchInput.addEventListener('input', function () {
+            const query = searchInput.value.trim();
+            if (query.length >= 2) {
+                fetch(`/search_customers?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        customerResults.innerHTML = '';
+                        if (data.length > 0) {
+                            customerTable.style.display = 'table';
+                            data.forEach(customer => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${customer.first_name} ${customer.last_name}</td>
+                                    <td>${customer.phone}</td>
+                                    <td>${customer.email}</td>
+                                    <td><button class="btn btn-primary" onclick="submitMaintenanceCustomer(${customer.id}, '${customer.first_name} ${customer.last_name}')">Select</button></td>
+                                `;
+                                customerResults.appendChild(row);
+                            });
+                        } 
+                    });
+            } else {
+                customerResults.innerHTML = '';
+            }
+        });
+    });
+
+    function submitMaintenanceCustomer(customerId, customerName) {
+        fetch(`/submit_maintenance_customer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ customer_id: customerId })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    successMessage.textContent = `${customerName} has been added as a maintenance customer.`;
+                    modal.style.display = 'block';
+                } else {
+                    alert('Failed to add customer. Please try again.');
+                }
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('success-modal').style.display = 'none';
+    }
+</script>
+{% endblock %}

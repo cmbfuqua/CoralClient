@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>All Bills</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bill in bills %}
+            <tr>
+                <td>{{ bill.created_at }}</td>
+                <td>{{ bill.visit.customer.first_name }} {{ bill.visit.customer.last_name }}</td>
+                <td>{{ bill.total_amount }}</td>
+                <td>{{ "Yes" if bill.is_paid else "No" }}</td>
+                <td>
+                    <a href="{{ url_for('maintenance_report', visit_id=bill.visit_id) }}">View Visit</a>
+                    <button>Mark as Paid</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

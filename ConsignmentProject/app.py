@@ -3,6 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, current_user, log
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
+from billingroutes import *
 
 from models import *
 from forms import *
@@ -517,10 +518,14 @@ def send_cancellation_notification(buyer, product, seller,order):
     mail.send(msg)
 
 
-################################################3
-# debug routes
-#################################################
-
+################################################
+# billing
+################################################
+@app.route('/billing', methods=['GET'])
+@login_required
+def billing():
+    
+    return render_template('billing/basebilling.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

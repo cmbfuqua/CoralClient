@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Maintenance Logs for {{ customer.first_name }} {{ customer.last_name }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Recommendations</th>
+                <th>Paid</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in visits %}
+            <tr>
+                <td>{{ visit.date_of_visit }}</td>
+                <td>{{ visit.recommendations }}</td>
+                <td>{{ "Yes" if visit.bill.is_paid else "No" }}</td>
+                <td>
+                    <a href="{{ url_for('maintenance_report', visit_id=visit.id) }}">View Full Report</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
