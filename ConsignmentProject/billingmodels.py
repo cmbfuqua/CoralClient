@@ -20,25 +20,28 @@ class MaintenanceVisit(db.Model):
     after_picture = db.Column(db.String(255))
     date_of_visit = db.Column(db.DateTime, default=datetime.now())
 
+    bill = db.relationship('Bill', backref='maintenance_visit', uselist=False)
+
 class Bill(db.Model):
     __tablename__ = 'Bill'
-    id = db.Column(db.Integer, primary_key=True)
-    visit_id = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
-    total_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
-    is_paid = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    paid_at = db.Column(db.DateTime, nullable=True)
-    notes = db.Column(db.Text, nullable=True)
+    BillID = db.Column(db.Integer, primary_key=True)
+    visitID = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
+    TotalAmount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
+    IsPaid = db.Column(db.Boolean, default=False)
+    CreatedAt = db.Column(db.DateTime, default=datetime.now())
+    PaidAt = db.Column(db.DateTime, nullable=True)
+    Notes = db.Column(db.Text, nullable=True)
+
     line_items = db.relationship('BillLineItem', backref='bill', cascade="all, delete-orphan")
 
 class BillLineItem(db.Model):
     __tablename__ = 'BillLineItem'
-    id = db.Column(db.Integer, primary_key=True)
-    bill_id = db.Column(db.Integer, db.ForeignKey('Bill.id'), nullable=False)
-    description = db.Column(db.String(255), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    LineItemID = db.Column(db.Integer, primary_key=True)
+    BillID = db.Column(db.Integer, db.ForeignKey('Bill.BillID'), nullable=False)
+    Description = db.Column(db.String(255), nullable=False)
+    Quantity = db.Column(db.Integer, nullable=False, default=1)
+    UnitPrice = db.Column(db.Numeric(10, 2), nullable=False)
 
     @property
-    def total_price(self):
+    def TotalPrice(self):
         return self.quantity * self.unit_price
