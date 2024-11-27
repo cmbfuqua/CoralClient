@@ -579,3 +579,48 @@ main {
     opacity: 1;
 }
 
+/* Modal background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%; /* Position it vertically in the middle */
+    left: 50%; /* Position it horizontally in the middle */
+    transform: translate(-50%, -50%); /* Offset the modal to truly center it */
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 300px; /* Set width of the modal */
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+/* Modal content */
+.modal-content {
+    position: relative;
+    font-family: Arial, sans-serif;
+}
+
+/* Close button */
+.close-button {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    font-size: 18px;
+    color: #007bff; /* Blue color for the close button */
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Close button hover effect */
+.close-button:hover {
+    color: #0056b3;
+}
+
+/* Success message text */
+#success-message {
+    text-align: center;
+    font-size: 16px;
+    color: #28a745; /* Green color for success message */
+}
+

@@ -22,12 +22,13 @@
 </table>
 
 <!-- Modal -->
-<div id="success-modal" class="modal" style="display:none;">
+<div id="success-modal" class="modal">
     <div class="modal-content">
         <span class="close-button" onclick="closeModal()">&times;</span>
         <p id="success-message"></p>
     </div>
 </div>
+
 
 <script>
     // JavaScript to handle search, selection, and submission as discussed
@@ -66,26 +67,37 @@
     });
 
     function submitMaintenanceCustomer(customerId, customerName) {
-        fetch(`/submit_maintenance_customer`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ customer_id: customerId })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    successMessage.textContent = `${customerName} has been added as a maintenance customer.`;
-                    modal.style.display = 'block';
-                } else {
-                    alert('Failed to add customer. Please try again.');
-                }
-            });
-    }
+    // Get references to the modal and success message elements
+    const successMessage = document.getElementById('success-message'); // Define successMessage
+    const modal = document.getElementById('success-modal'); // Define modal
 
-    function closeModal() {
-        document.getElementById('success-modal').style.display = 'none';
-    }
+    // Make the fetch request
+    fetch(`/submit_maintenance_customer`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ customer_id: customerId })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                successMessage.textContent = `${customerName} has been added as a maintenance customer.`; // Update the message
+                modal.style.display = 'block'; // Show the modal
+            } else {
+                alert('Failed to add customer. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+}
+
+// Close modal function remains unchanged
+function closeModal() {
+    document.getElementById('success-modal').style.display = 'none';
+}
+
 </script>
 {% endblock %}
