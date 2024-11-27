@@ -19,7 +19,10 @@
             {% if coral.order_status == 'IP' %}
                 <span>Item on hold</span>
             {% elif not current_user.is_admin %}
-                <span class="tooltip" title="How can I order this?">Info</span>
+            <span class="tooltip">Info
+                <span class="tooltip-text">Please give us a call or come into the store to order this product!</span>
+            </span>
+            
             {% else %}
                 <form action="{{ url_for('create_order', product_id=coral.product_id) }}" method="post">
                     <button type="submit">Create Order</button>

@@ -219,17 +219,33 @@ def get_subcategories(item_type_id):
 @app.route('/consignment/edit/<int:item_id>', methods=['GET', 'POST'])
 @login_required
 def edit_item(item_id):
-    product = ConsignmentProduct.query.filter_by(product_id = item_id).first()
+    product = ConsignmentProduct.query.filter_by(product_id=item_id).first()
+
+    if not product:
+        flash("Product not found.", "danger")
+        return redirect(url_for('consignment'))
+
     if not (current_user.is_admin or product.seller_id == current_user.user_id):
         flash('You do not have permission to edit this item.', 'danger')
         return redirect(url_for('consignment'))
 
+    # Initialize the form
     form = ConsignmentForm(obj=product)
+
+    # Populate item_type choices
+    item_types = ItemType.query.all()
+    form.item_type.choices = [(item.item_type_id, item.name) for item in item_types]
+
+    # Populate subcategory choices
+    subtypes = ItemSubtype.query.order_by(ItemSubtype.name).all()
+    form.item_subtype.choices = [(sub.item_subtype_id, sub.name) for sub in subtypes]
+
     if form.validate_on_submit():
         product.name = form.name.data
         product.description = form.description.data
         product.price = form.price.data
         product.item_type_id = form.item_type.data
+        product.item_subtype_id = form.item_subtype.data
 
         # Handle image upload
         if form.image.data:
@@ -253,19 +269,28 @@ def edit_item(item_id):
 
     return render_template('edit_item.html', form=form, item=product)
 
-@app.route('/consignment/delete/<int:item_id>', methods=['POST'])
+
+@app.route('/delete_item/<int:item_id>', methods=['POST'])
 @login_required
 def delete_item(item_id):
-    product = ConsignmentProduct.query.get_or_404(item_id)
+    item = ConsignmentProduct.query.get_or_404(item_id)
 
-    if current_user.role_id not in [2, 3] or product.seller_id != current_user.user_id:
-        flash('You do not have permission to delete this item.', 'danger')
+    # Ensure the current user is the seller of the item or has admin privileges
+    if item.seller_id != current_user.user_id and not current_user.is_admin:
+        flash("You do not have permission to delete this item.")
         return redirect(url_for('consignment'))
 
-    db.session.delete(product)
+    # Check the order status
+    if item.order_status != 'None':
+        flash("Item cannot be deleted as it has been ordered or processed.")
+        return redirect(url_for('consignment'))
+
+    # Proceed with deletion
+    db.session.delete(item)
     db.session.commit()
-    flash('Product deleted successfully!', 'success')
+    flash("Item deleted successfully.")
     return redirect(url_for('consignment'))
+
 
 ##############################################################
 # Admin stuff
@@ -394,13 +419,14 @@ def search_buyer():
 
     first_name = request.args.get('first_name', '').strip()
     last_name = request.args.get('last_name', '').strip()
+    seller_id = request.args.get('seller_id')
 
     if not first_name and not last_name:
         return jsonify([])  # Return empty list if no query is provided
 
     # Search for users matching either the first or last name
     buyers = User.query.filter(
-        (User.first_name.ilike(f'%{first_name}%')) & (User.last_name.ilike(f'%{last_name}%'))
+        (User.first_name.ilike(f'%{first_name}%')) & (User.last_name.ilike(f'%{last_name}%')) & (User.user_id != seller_id)
     ).all()
 
     # Return matching buyers as JSON

@@ -550,4 +550,32 @@ main {
     color: var(--tooltip-text-color); /* Change color on hover */
 }
 
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    color: #4c00ff;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 150px; /* Adjust width as needed */
+    background-color: rgb(255, 255, 255);
+    color: #000000;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    bottom: 125%; /* Position above the text */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
 

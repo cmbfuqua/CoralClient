@@ -18,6 +18,7 @@
     <h2>Seller Details</h2>
     <p><strong>Seller:</strong> {{ product.seller.first_name }} {{ product.seller.last_name }}</p>
     <p><strong>Email:</strong> {{ product.seller.email }}</p>
+    <input type="hidden" id="seller_id" value="{{product.seller.user_id}}">
 </section>
 
 <!-- Display buyer information -->
@@ -69,7 +70,8 @@
         const firstName = document.getElementById('buyer_first_name').value.trim();  // Buyer first name
         const lastName = document.getElementById('buyer_last_name').value.trim();    // Buyer last name
         const buyerList = document.getElementById('buyer_results'); // Buyer list container
-        console.log(`Searching for buyers with first name: ${firstName} and last name: ${lastName}`);
+        const seller_id = document.getElementById('seller_id').value;
+        console.log(`Searching for buyers with first name: ${firstName} and last name: ${lastName} id ${seller_id}`);
 
         // Only perform search if at least one of the fields is filled
         if (!firstName && !lastName) {
@@ -78,7 +80,7 @@
         }
 
         // Construct the search URL with the query parameters
-        fetch(`/search_buyer?first_name=${firstName}&last_name=${lastName}`)
+        fetch(`/search_buyer?first_name=${firstName}&last_name=${lastName}&seller_id=${seller_id}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch buyers.');
