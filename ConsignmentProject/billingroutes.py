@@ -14,34 +14,64 @@ def view_all_bills():
     bills = Bill.query.all()
     return render_template('billing/view_all_bills.html', bills=bills)
 
-# Create a new bill for a maintenance visit
 @app.route('/bill/create/<int:visit_id>', methods=['GET', 'POST'])
+@login_required
 def create_bill(visit_id):
-    form = CreateBillForm()
-    if form.validate_on_submit():
-        bill = Bill(visit_id=visit_id, notes=form.notes.data)
+    visit = MaintenanceVisit.query.get_or_404(visit_id)
+    if not current_user.is_admin and visit.customer_id != current_user.id:
+        flash("Access restricted.")
+        return redirect(url_for('home'))
+
+    form = AddLineItemForm()
+    bill = Bill.query.filter_by(visitID=visit_id).first()
+
+    # If no bill exists for this visit, create one with a default line item
+    if not bill:
+        bill = Bill(visitID=visit_id, Notes="")
         db.session.add(bill)
         db.session.commit()
-        flash('Bill created successfully.', 'success')
-        return redirect(url_for('billing/add_line_item', bill_id=bill.id))
-    return render_template('billing/create_bill.html', form=form)
 
-# Add line items to a bill
-@app.route('/bill/<int:bill_id>/add-line-item', methods=['GET', 'POST'])
-def add_line_item(bill_id):
-    form = AddLineItemForm()
+        # Add the default maintenance visit line item
+        default_item = BillLineItem(
+            BillID=bill.BillID,
+            Description="Maintenance Visit",
+            Quantity=1,
+            UnitPrice=55.00
+        )
+        db.session.add(default_item)
+        db.session.commit()
+        flash("Default line item added for maintenance visit.", "success")
+
+    # Handle form submission to add more line items
     if form.validate_on_submit():
         line_item = BillLineItem(
-            bill_id=bill_id,
-            description=form.description.data,
-            quantity=form.quantity.data,
-            unit_price=form.unit_price.data
+            BillID=bill.BillID,
+            Description=form.description.data,
+            Quantity=form.quantity.data,
+            UnitPrice=form.unit_price.data
         )
         db.session.add(line_item)
         db.session.commit()
-        flash('Line item added successfully.', 'success')
-    bill = Bill.query.get_or_404(bill_id)
-    return render_template('billing/add_line_item.html', form=form, bill=bill)
+        flash("Line item added successfully.", "success")
+
+        # Calculate the TotalAmount by summing up all line item TotalPrices
+        total_amount = sum(item.TotalPrice for item in bill.line_items)
+        bill.TotalAmount = total_amount
+
+        # Commit the changes to update the TotalAmount in the database
+        db.session.commit()
+
+    # Get the updated bill with all line items
+    bill = Bill.query.get(bill.BillID)
+
+    return render_template(
+        'billing/create_bill_with_items.html',
+        form=form,
+        bill=bill,
+        visit=visit
+    )
+
+
 
 # Mark bill as paid
 @app.route('/bill/<int:bill_id>/mark-paid', methods=['POST'])
@@ -74,6 +104,8 @@ def add_maintenance_customer():
     
     return render_template('billing/add_maintenance_customer.html')
 
+import os
+
 @app.route('/submit_maintenance_customer', methods=['POST'])
 @login_required
 def submit_maintenance_customer():
@@ -91,7 +123,17 @@ def submit_maintenance_customer():
     customer.is_maintenance = True
     db.session.commit()
 
-    return jsonify({'success': True, 'message': 'Customer updated successfully.'})
+    # Create a unique folder for the customer
+    
+    folder_path = os.path.join('static', 'uploads', 'billing', customer.maintenance_folder_path)
+
+    try:
+        os.makedirs(folder_path, exist_ok=True) # exists_ok=True will check to see if the folder already exists, and if it does don't do anything
+    except Exception as e:
+        return jsonify({'success': False, 'message': f"Error creating folder: {str(e)}"}), 500
+
+    return jsonify({'success': True, 'message': 'Customer updated and folder created successfully.'})
+
 
 
 @app.route('/search_customers', methods=['GET'])
@@ -132,21 +174,22 @@ def create_maintenance_visit():
     ]
     
     if form.validate_on_submit():
+        customer = User.query.filter_by(user_id = form.customer_id.data).first()
         # save images
         imagepre = form.before_picture.data
         imagepost = form.after_picture.data
         if imagepre:
             filename = secure_filename(imagepre.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing', filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing',customer.maintenance_folder_path, filename)
             imagepre.save(upload_path)
-            imagepre_url = f"uploads/billing/{filename}" 
+            imagepre_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}" 
         else:
             imagepre_url = None
         if imagepost:
             filename = secure_filename(imagepost.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing', filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing',customer.maintenance_folder_path, filename)
             imagepost.save(upload_path)
-            imagepost_url = f"uploads/billing/{filename}" 
+            imagepost_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}" 
         else:
             imagepost_url = None
         
@@ -168,8 +211,8 @@ def create_maintenance_visit():
         db.session.add(visit)
         db.session.commit()
         flash("Maintenance visit created.")
-        maintenance_customers = User.query.filter_by(is_maintenance=True).all()
-        return render_template('billing/customer_management.html', maintenance_customers=maintenance_customers)
+        return redirect(url_for('create_bill', visit_id=visit.visit_id))
+
     if not form.validate_on_submit():
         print(form.errors)
     return render_template('billing/create_maintenance_visit.html', form=form)

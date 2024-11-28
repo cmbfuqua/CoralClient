@@ -27,6 +27,10 @@ class User(UserMixin, db.Model):
     def is_seller(self):
         return self.role_id in [2,3]
     
+    @property
+    def maintenance_folder_path(self):
+        return self.first_name + self.last_name + str(self.user_id)
+    
     def get_id(self):
         return str(self.user_id)
     

@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from DB import db,app
 from datetime import datetime
+#from models import User
 
 class MaintenanceVisit(db.Model):
     __tablename__ = 'maintenance_visits'
@@ -21,12 +22,13 @@ class MaintenanceVisit(db.Model):
     date_of_visit = db.Column(db.DateTime, default=datetime.now())
 
     bill = db.relationship('Bill', backref='maintenance_visit', uselist=False)
+    customer = db.relationship('User',backref='maintenance_visit',uselist=False)
 
 class Bill(db.Model):
     __tablename__ = 'Bill'
     BillID = db.Column(db.Integer, primary_key=True)
     visitID = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
-    TotalAmount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
+    TotalAmount = db.Column(db.Float, nullable=False, default=0.00)
     IsPaid = db.Column(db.Boolean, default=False)
     CreatedAt = db.Column(db.DateTime, default=datetime.now())
     PaidAt = db.Column(db.DateTime, nullable=True)
@@ -44,4 +46,4 @@ class BillLineItem(db.Model):
 
     @property
     def TotalPrice(self):
-        return self.quantity * self.unit_price
+        return self.Quantity * self.UnitPrice

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Bill for Maintenance Visit</h1>
+
+<!-- Visit and Bill Details -->
+<div>
+    <h3>Visit Information</h3>
+    <p><strong>Visit ID:</strong> {{ visit.visit_id }}</p>
+    <p><strong>Customer:</strong> {{ visit.customer.first_name }} {{ visit.customer.last_name }}</p>
+    <p><strong>Visit Date:</strong> {{ visit.date_of_visit.strftime('%Y-%m-%d') }}</p>
+</div>
+
+<div>
+    <h3>Bill Information</h3>
+    <p><strong>Bill ID:</strong> {{ bill.BillID }}</p>
+</div>
+
+<!-- Add Line Item Form -->
+<div>
+    <h3>Add Line Item</h3>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.description.label }}<br>
+            {{ form.description() }}
+        </div>
+        <div>
+            {{ form.quantity.label }}<br>
+            {{ form.quantity() }}
+        </div>
+        <div>
+            {{ form.unit_price.label }}<br>
+            {{ form.unit_price() }}
+        </div>
+        <div>
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+
+<!-- Display Current Line Items -->
+<div>
+    <h3>Current Line Items</h3>
+    <ul>
+        {% for item in bill.line_items %}
+            <li>
+                {{ item.Description }}: {{ item.Quantity }} @ {{ item.UnitPrice }} = {{ item.Quantity * item.UnitPrice }}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Redirect Button -->
+<div style="margin-top: 50px;">
+    <a href="{{ url_for('create_maintenance_visit') }}" class="btn btn-secondary" >Submit Bill</a>
+</div>
+{% endblock %}

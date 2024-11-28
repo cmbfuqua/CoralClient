@@ -1,3 +1,3 @@
 No bill is created when the maintenance is created
-pictures not being stored when uploaded through visit creation. 
-    create the folder structure as billing/{customerName}/photo
+create folder structure for when a customer is added as maintenance
+   in the uploads/billing/{customername}/file
