@@ -44,14 +44,14 @@
     {% if visit.bill %}
         <hr>
         <h3>Billing Information</h3>
-        <p><strong>Total Amount:</strong> ${{ "{:.2f}".format(visit.bill.total_amount) }}</p>
-        <p><strong>Paid:</strong> {{ "Yes" if visit.bill.is_paid else "No" }}</p>
-        <p><strong>Created At:</strong> {{ visit.bill.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        <p><strong>Total Amount:</strong> {{ visit.bill.TotalAmount }}</p>
+        <p><strong>Paid:</strong> {{ "Yes" if visit.bill.IsPaid else "No" }}</p>
+        <p><strong>Created At:</strong> {{ visit.bill.CreatedAt.strftime('%Y-%m-%d %H:%M:%S') }}</p>
         {% if visit.bill.paid_at %}
-            <p><strong>Paid At:</strong> {{ visit.bill.paid_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            <p><strong>Paid At:</strong> {{ visit.bill.PaidAt.strftime('%Y-%m-%d %H:%M:%S') }}</p>
         {% endif %}
         {% if visit.bill.notes %}
-            <p><strong>Billing Notes:</strong> {{ visit.bill.notes }}</p>
+            <p><strong>Billing Notes:</strong> {{ visit.bill.Notes }}</p>
         {% endif %}
 
         {% if visit.bill.line_items %}
@@ -68,10 +68,10 @@
                 <tbody>
                     {% for item in visit.bill.line_items %}
                         <tr>
-                            <td>{{ item.description }}</td>
-                            <td>{{ item.quantity }}</td>
-                            <td>${{ "{:.2f}".format(item.unit_price) }}</td>
-                            <td>${{ "{:.2f}".format(item.total_price) }}</td>
+                            <td>{{ item.Description }}</td>
+                            <td>{{ item.Quantity }}</td>
+                            <td>{{ item.UnitPrice }}</td>
+                            <td>{{ item.TotalPrice }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
