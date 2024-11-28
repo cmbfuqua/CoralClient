@@ -624,3 +624,18 @@ main {
     color: #28a745; /* Green color for success message */
 }
 
+.billsbtn {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.billsbtn:hover {
+    background-color: var(--hover-color);
+    color: var(--tooltip-text-color);
+}

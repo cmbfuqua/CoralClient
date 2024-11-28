@@ -1,29 +1,55 @@
 {% extends "base.html" %}
 {% block content %}
     <h2>All Bills</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Total</th>
-                <th>Paid</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for bill in bills %}
-            <tr>
-                <td>{{ bill.created_at }}</td>
-                <td>{{ bill.visit.customer.first_name }} {{ bill.visit.customer.last_name }}</td>
-                <td>{{ bill.total_amount }}</td>
-                <td>{{ "Yes" if bill.is_paid else "No" }}</td>
-                <td>
-                    <a href="{{ url_for('maintenance_report', visit_id=bill.visit_id) }}">View Visit</a>
-                    <button>Mark as Paid</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    
+    <!-- Buttons for CSV Generation -->
+    <form action="{{ url_for('generate_invoices_all', month=current_month) }}" method="GET">
+        <button type="submit">Generate Invoices for All Customers</button>
+    </form>
+    <form action="{{ url_for('generate_invoices_customer', month=current_month, customer_id=selected_customer_id) }}" method="GET">
+        <button type="submit">Generate Invoices for Specific Customer</button>
+    </form>
+    
+    
+    <!-- Grouped Bills -->
+    <h3>Unpaid Bills This Month</h3>
+    {{ render_table(unpaid_this_month) }}
+    
+    <h3>Paid Bills This Month</h3>
+    {{ render_table(paid_this_month) }}
+    
+    <h3>Previous Unpaid Bills</h3>
+    {{ render_table(previous_unpaid) }}
+    
+    <h3>Previous Paid Bills</h3>
+    {{ render_table(previous_paid) }}
 {% endblock %}
+{% macro render_table(bills) %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Paid</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bill in bills %}
+        <tr>
+            <td>{{ bill.CreatedAt }}</td>
+            <td>{{ bill.visit.customer.first_name }} {{ bill.visit.customer.last_name }}</td>
+            <td>{{ bill.TotalAmount }}</td>
+            <td>{{ "Yes" if bill.IsPaid else "No" }}</td>
+            <td>
+                <a href="{{ url_for('maintenance_report', visit_id=bill.visitID) }}">View Visit</a>
+                <form action="{{ url_for('mark_bill_paid', bill_id=bill.BillID) }}" method="POST" style="display: inline;">
+                    <button class="billsbtn" type="submit">Mark as Paid</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}

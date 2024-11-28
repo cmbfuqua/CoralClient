@@ -30,11 +30,12 @@ class Bill(db.Model):
     visitID = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
     TotalAmount = db.Column(db.Float, nullable=False, default=0.00)
     IsPaid = db.Column(db.Boolean, default=False)
-    CreatedAt = db.Column(db.DateTime, default=datetime.now())
-    PaidAt = db.Column(db.DateTime, nullable=True)
+    CreatedAt = db.Column(db.Date, default=datetime.now())
+    PaidAt = db.Column(db.Date, nullable=True)
     Notes = db.Column(db.Text, nullable=True)
 
     line_items = db.relationship('BillLineItem', backref='bill', cascade="all, delete-orphan")
+    visit = db.relationship('MaintenanceVisit',backref='bills')
 
 class BillLineItem(db.Model):
     __tablename__ = 'BillLineItem'
