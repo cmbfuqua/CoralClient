@@ -46,7 +46,7 @@ def generate_invoices_all():
         customer = data["customer"]
         customer_name = f"{customer.first_name} {customer.last_name}"
         file_name = f"{customer_name}_{month}.pdf"
-        pdf_path = create_pdf(data["bills"], customer_name, customer_id, file_name)
+        pdf_path = create_pdf(data["bills"], customer.maintenance_folder_name, customer_id, file_name)
 
         # Send email with the invoice PDF
         send_email(
@@ -103,7 +103,7 @@ def generate_invoices_customer(customer_id):
     file_name = f"{customer_name}_{month}.pdf"
     
     # Create the PDF and save the path
-    pdf_path = create_pdf(bills, customer_name, customer_id, file_name)
+    pdf_path = create_pdf(bills, customer.maintenance_folder_path, customer_id, file_name)
 
     # Send the invoice PDF via email
     send_email("Your Monthly Invoice", customer.email, pdf_path)
