@@ -21,8 +21,9 @@ class MaintenanceVisit(db.Model):
     after_picture = db.Column(db.String(255))
     date_of_visit = db.Column(db.DateTime, default=datetime.now())
 
-    bill = db.relationship('Bill', backref='maintenance_visit', uselist=False)
-    customer = db.relationship('User',backref='maintenance_visit',uselist=False)
+    # Correct the relationship and use `back_populates`
+    bill = db.relationship('Bill', back_populates='visit', uselist=False)
+    customer = db.relationship('User', backref='maintenance_visits', uselist=False)
 
 class Bill(db.Model):
     __tablename__ = 'Bill'
@@ -35,7 +36,9 @@ class Bill(db.Model):
     Notes = db.Column(db.Text, nullable=True)
 
     line_items = db.relationship('BillLineItem', backref='bill', cascade="all, delete-orphan")
-    visit = db.relationship('MaintenanceVisit',backref='bills',overlaps="bill,maintenance_visit")
+
+    # Correct the relationship and use `back_populates`
+    visit = db.relationship('MaintenanceVisit', back_populates='bill')
 
 class BillLineItem(db.Model):
     __tablename__ = 'BillLineItem'

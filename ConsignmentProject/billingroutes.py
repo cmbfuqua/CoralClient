@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from reportlab.lib.pagesizes import letter
 from flask_mail import Message, Mail
@@ -7,6 +7,7 @@ from sqlalchemy.orm import joinedload
 from io import BytesIO
 from flask_login import current_user, login_required
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 from models import User
 from billingmodels import *
@@ -17,6 +18,10 @@ mail = Mail(app)
 #################################################
 # Generating invoices
 #################################################
+
+
+from concurrent.futures import ThreadPoolExecutor
+from flask import jsonify, current_app  # For managing context
 
 @app.route('/generate_invoices_all/')
 def generate_invoices_all():
@@ -40,27 +45,38 @@ def generate_invoices_all():
             }
         customer_bills[customer.user_id]["bills"].append(bill)
 
-    # Generate PDFs and send emails
-    success_messages = []  # To hold the success messages for each customer
-    for customer_id, data in customer_bills.items():
-        customer = data["customer"]
-        customer_name = f"{customer.first_name} {customer.last_name}"
-        file_name = f"{customer_name}_{month}.pdf"
-        pdf_path = create_pdf(data["bills"], customer.maintenance_folder_name, customer_id, file_name)
+    def process_customer(app, customer_id, data):
+        """Process a single customer: generate PDF and send email."""
+        with app.app_context():  # Push the application context
+            customer = data["customer"]
+            customer_name = f"{customer.first_name} {customer.last_name}"
+            file_name = f"{customer_name}_{month}.pdf"
+            pdf_path = create_pdf(data["bills"], customer.maintenance_folder_path, customer_id, file_name)
 
-        # Send email with the invoice PDF
-        send_email(
-            subject="Your Monthly Invoice",
-            recipient=customer.email,
-            file_path=pdf_path
-        )
+            # Send email with the invoice PDF
+            send_email(
+                subject="Your Monthly Invoice",
+                recipient=customer.email,
+                file_path=pdf_path
+            )
 
-        # Append the success message for this customer
-        success_messages.append({
-            "customer_name": customer_name,
-            "customer_email": customer.email
-        })
-    
+            # Return the success message for this customer
+            return {
+                "customer_name": customer_name,
+                "customer_email": customer.email
+            }
+
+    # Use ThreadPoolExecutor for concurrent processing
+    success_messages = []
+    with ThreadPoolExecutor() as executor:
+        # Pass the current app explicitly to each thread
+        futures = [executor.submit(process_customer, current_app._get_current_object(), customer_id, data) for customer_id, data in customer_bills.items()]
+        
+        # Collect results as they complete
+        for future in futures:
+            success_messages.append(future.result())
+
+    # Generate summary data
     now = datetime.now()
     start_of_month = now.replace(day=1).date()
     bills = Bill.query.all()
@@ -78,6 +94,8 @@ def generate_invoices_all():
         previous_unpaid=previous_unpaid,
         previous_paid=previous_paid
     )
+
+
 
 @app.route('/generate_invoices_customer/<int:customer_id>')
 def generate_invoices_customer(customer_id):
@@ -262,11 +280,12 @@ def create_bill(visit_id):
 @app.route('/bill/<int:bill_id>/mark-paid', methods=['POST'])
 def mark_bill_paid(bill_id):
     bill = Bill.query.get_or_404(bill_id)
-    bill.is_paid = True
-    bill.paid_at = datetime.utcnow()
+    bill.IsPaid = True
+    bill.PaidAt = datetime.utcnow()
     db.session.commit()
+    print('bill marked as paid')
     flash('Bill marked as paid.', 'success')
-    return redirect(url_for('billing/billing.view_bills'))
+    return redirect(url_for('view_all_bills'))
 #########################################################33
 # --- Customer Management ---
 #########################################################
