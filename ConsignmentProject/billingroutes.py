@@ -1,5 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from werkzeug.utils import secure_filename
+from reportlab.lib.pagesizes import letter
+from flask_mail import Message, Mail
+from reportlab.pdfgen import canvas
+from sqlalchemy.orm import joinedload
+from io import BytesIO
 from flask_login import current_user, login_required
 import os
 
@@ -8,11 +13,193 @@ from billingmodels import *
 from billingforms import *
 
 
+mail = Mail(app)
+#################################################
+# Generating invoices
+#################################################
+
+@app.route('/generate_invoices_all/')
+def generate_invoices_all():
+    month = request.args.get('month')
+    month = int(month)  # Ensure month is numeric
+
+    # Query the bills for the given month
+    bills = Bill.query.filter(
+        db.func.extract('month', Bill.CreatedAt) == month,
+        Bill.IsPaid == False
+    ).all()
+
+    # Group bills by customer
+    customer_bills = {}
+    for bill in bills:
+        customer = bill.visit.customer
+        if customer.user_id not in customer_bills:
+            customer_bills[customer.user_id] = {
+                "customer": customer,
+                "bills": []
+            }
+        customer_bills[customer.user_id]["bills"].append(bill)
+
+    # Generate PDFs and send emails
+    success_messages = []  # To hold the success messages for each customer
+    for customer_id, data in customer_bills.items():
+        customer = data["customer"]
+        customer_name = f"{customer.first_name} {customer.last_name}"
+        file_name = f"{customer_name}_{month}.pdf"
+        pdf_path = create_pdf(data["bills"], customer_name, customer_id, file_name)
+
+        # Send email with the invoice PDF
+        send_email(
+            subject="Your Monthly Invoice",
+            recipient=customer.email,
+            file_path=pdf_path
+        )
+
+        # Append the success message for this customer
+        success_messages.append({
+            "customer_name": customer_name,
+            "customer_email": customer.email
+        })
+    
+    now = datetime.now()
+    start_of_month = now.replace(day=1).date()
+    bills = Bill.query.all()
+    unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt >= start_of_month]
+    paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt >= start_of_month]
+    previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt < start_of_month]
+    previous_paid = [bill for bill in bills if bill.IsPaid and bill.CreatedAt < start_of_month]
+    
+    # Pass the success messages to the template
+    return render_template(
+        'billing/view_all_bills.html', 
+        success_messages=success_messages,
+        unpaid_this_month=unpaid_this_month,
+        paid_this_month=paid_this_month,
+        previous_unpaid=previous_unpaid,
+        previous_paid=previous_paid
+    )
+
+@app.route('/generate_invoices_customer/<int:customer_id>')
+def generate_invoices_customer(customer_id):
+    month = request.args.get('month')
+    month = int(month)  # Ensure month is numeric
+    
+    # Query for the bills based on the month and customer_id
+    bills = (
+        db.session.query(Bill)
+        .join(MaintenanceVisit)
+        .filter(
+            db.func.extract('month', Bill.CreatedAt) == month,
+            MaintenanceVisit.customer_id == customer_id,
+            Bill.IsPaid == False
+        )
+        .options(joinedload(Bill.visit))
+        .all()
+    )
+
+    # Get the customer details
+    customer = User.query.get_or_404(customer_id)
+    customer_name = f"{customer.first_name} {customer.last_name}"
+    file_name = f"{customer_name}_{month}.pdf"
+    
+    # Create the PDF and save the path
+    pdf_path = create_pdf(bills, customer_name, customer_id, file_name)
+
+    # Send the invoice PDF via email
+    send_email("Your Monthly Invoice", customer.email, pdf_path)
+
+    # Prepare success message to show on the page
+    success_message = {
+        "pdf_name": file_name,
+        "customer_name": customer_name,
+        "customer_email": customer.email
+    }
+    
+    # Redirect back to the maintenance logs page, passing the success message
+    return render_template('billing/view_maintenance_logs.html', 
+                           visits=MaintenanceVisit.query.filter_by(customer_id=customer_id).order_by(MaintenanceVisit.date_of_visit.desc()).all(), 
+                           customer=customer, 
+                           success_message=success_message)
+
+def create_pdf(bills, customer_name, customer_id, file_name):
+    # Define the file path
+    directory = f"static/uploads/billing/{customer_name}{customer_id}/invoices/"
+    os.makedirs(directory, exist_ok=True)
+    file_path = os.path.join(directory, file_name)
+
+    # Generate PDF
+    pdf = canvas.Canvas(file_path, pagesize=letter)
+    pdf.setTitle(f"Invoice - {customer_name}")
+
+    # Add logo
+    pdf.drawImage("static/images/logo.png", 50, 750, width=200, height=50)
+
+    # Add title
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(50, 700, f"Invoices - {customer_name}")
+
+    # Table headers
+    y_position = 650
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(50, y_position, "Date")
+    pdf.drawString(150, y_position, "Bill ID")
+    pdf.drawString(250, y_position, "Total Amount")
+    y_position -= 20
+
+    # Add bill details
+    total_amount = 0
+    pdf.setFont("Helvetica", 10)
+    for bill in bills:
+        pdf.drawString(50, y_position, str(bill.CreatedAt))
+        pdf.drawString(150, y_position, str(bill.BillID))
+        pdf.drawString(250, y_position, f"${bill.TotalAmount:.2f}")
+        total_amount += bill.TotalAmount
+        y_position -= 20
+        if y_position < 50:
+            pdf.showPage()
+            y_position = 750
+
+    # Add total
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(50, y_position - 20, f"Total Amount: ${total_amount:.2f}")
+
+    pdf.save()
+    return file_path
+
+def send_email(subject, recipient, file_path):
+    with open(file_path, 'rb') as pdf_file:
+        pdf_data = pdf_file.read()
+
+    msg = Message(subject, recipients=[recipient])
+    msg.body = "Please find attached your invoice."
+    msg.attach(os.path.basename(file_path), "application/pdf", pdf_data)
+    mail.send(msg)
+
+
+
 # View all bills
 @app.route('/view_all_bills')
 def view_all_bills():
+    from datetime import datetime
+
+    # Get current date and determine the first day of the month
+    now = datetime.now()
+    start_of_month = now.replace(day=1).date()
+    
+    # Query bills and group them
     bills = Bill.query.all()
-    return render_template('billing/view_all_bills.html', bills=bills)
+    unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt >= start_of_month]
+    paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt >= start_of_month]
+    previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt < start_of_month]
+    previous_paid = [bill for bill in bills if bill.IsPaid and bill.CreatedAt < start_of_month]
+    
+    return render_template(
+        'billing/view_all_bills.html',
+        unpaid_this_month=unpaid_this_month,
+        paid_this_month=paid_this_month,
+        previous_unpaid=previous_unpaid,
+        previous_paid=previous_paid
+    )
 
 @app.route('/bill/create/<int:visit_id>', methods=['GET', 'POST'])
 @login_required
@@ -70,8 +257,6 @@ def create_bill(visit_id):
         bill=bill,
         visit=visit
     )
-
-
 
 # Mark bill as paid
 @app.route('/bill/<int:bill_id>/mark-paid', methods=['POST'])
@@ -251,3 +436,13 @@ def generate_monthly_bills():
     # This will involve iterating through maintenance visits in the current month and creating summary reports.
     flash("Monthly bills generated and emailed.")
     return redirect(url_for('billing/customer_management'))
+
+@app.route('/send-test-mail')
+def send_mail():
+    try:
+        msg = Message("Test Email", recipients=["Benjamin.Fuqua@gmail.com.com"])
+        msg.body = "This is a test email sent from Flask-Mail!"
+        mail.send(msg)
+        return "Email sent successfully!"
+    except Exception as e:
+        return str(e)

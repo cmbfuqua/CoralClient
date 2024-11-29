@@ -22,7 +22,7 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
     MAIL_USERNAME = 'Corals4CheapAutomated@gmail.com'
-    MAIL_PASSWORD = 'wpfm dgyk gkku frih'
+    MAIL_PASSWORD = 'mabg kcyn vhnq joiq'
     MAIL_DEFAULT_SENDER = 'Corals4CheapAutomated@gmail.com'
 
 

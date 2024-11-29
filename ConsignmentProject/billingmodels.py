@@ -35,7 +35,7 @@ class Bill(db.Model):
     Notes = db.Column(db.Text, nullable=True)
 
     line_items = db.relationship('BillLineItem', backref='bill', cascade="all, delete-orphan")
-    visit = db.relationship('MaintenanceVisit',backref='bills')
+    visit = db.relationship('MaintenanceVisit',backref='bills',overlaps="bill,maintenance_visit")
 
 class BillLineItem(db.Model):
     __tablename__ = 'BillLineItem'

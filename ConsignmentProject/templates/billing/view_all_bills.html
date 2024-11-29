@@ -2,15 +2,51 @@
 {% block content %}
     <h2>All Bills</h2>
     
-    <!-- Buttons for CSV Generation -->
-    <form action="{{ url_for('generate_invoices_all', month=current_month) }}" method="GET">
+    <!-- Form to select month and generate invoices -->
+    <form action="{{ url_for('generate_invoices_all') }}" method="GET">
+        <label for="month">Select Month:</label>
+        <select name="month" id="month">
+            <option value=1>January</option>
+            <option value=2>February</option>
+            <option value=3>March</option>
+            <option value=4>April</option>
+            <option value=5>May</option>
+            <option value=6>June</option>
+            <option value=7>July</option>
+            <option value=8>August</option>
+            <option value=9>September</option>
+            <option value=10>October</option>
+            <option value=11>November</option>
+            <option value=12>December</option>
+        </select>
+    
         <button type="submit">Generate Invoices for All Customers</button>
     </form>
-    <form action="{{ url_for('generate_invoices_customer', month=current_month, customer_id=selected_customer_id) }}" method="GET">
-        <button type="submit">Generate Invoices for Specific Customer</button>
-    </form>
-    
-    
+
+    <!-- Display Success Modal if success_messages exists -->
+    {% if success_messages %}
+        <div id="successModal" class="modal" style="display: block;">
+            <div class="modal-content">
+                <h4>Invoices Sent Successfully!</h4>
+                <ul>
+                    {% for message in success_messages %}
+                        <li>Sent invoice to {{ message.customer_name }} at {{ message.customer_email }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn">Close</button>
+            </div>
+        </div>
+
+        <script>
+            // Function to close the modal
+            function closeModal() {
+                document.getElementById('successModal').style.display = 'none';
+            }
+        </script>
+    {% endif %}
+
     <!-- Grouped Bills -->
     <h3>Unpaid Bills This Month</h3>
     {{ render_table(unpaid_this_month) }}
@@ -44,9 +80,11 @@
             <td>{{ "Yes" if bill.IsPaid else "No" }}</td>
             <td>
                 <a href="{{ url_for('maintenance_report', visit_id=bill.visitID) }}">View Visit</a>
+                {% if bill.IsPaid == False %}
                 <form action="{{ url_for('mark_bill_paid', bill_id=bill.BillID) }}" method="POST" style="display: inline;">
                     <button class="billsbtn" type="submit">Mark as Paid</button>
                 </form>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
