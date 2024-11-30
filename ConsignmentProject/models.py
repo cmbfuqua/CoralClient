@@ -16,7 +16,7 @@ class User(UserMixin, db.Model):
     phone_number = db.Column(db.String(20), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'), nullable=False)
     is_maintenance = db.Column(db.Boolean,nullable=False,default=0)
-    
+    in_store_credit = db.Column(db.Float)
     role = db.relationship('Role', backref='users')
 
     @property

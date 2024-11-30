@@ -76,7 +76,8 @@ def register():
             last_name=form.last_name.data,
             dob=form.dob.data,
             phone_number=form.phone_number.data,
-            role=user_role
+            role=user_role,
+            in_store_credit=0
         )
         db.session.add(user)
         db.session.commit()
@@ -97,6 +98,32 @@ def edit_user():
         flash('Your profile has been updated!', 'success')
         return redirect(url_for('home'))
     return render_template('edit_user.html', form=form)
+
+@app.route('/user/<int:user_id>/edit', methods=['GET'])
+def edit_user_admin(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('edit_user_admin.html', user=user)
+
+@app.route('/user/<int:user_id>/update', methods=['POST'])
+def update_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.first_name = request.form['first_name']
+    user.last_name = request.form['last_name']
+    user.dob = request.form['dob']
+    user.in_store_credit = float(request.form['in_store_credit'])
+    user.phone_number = request.form['phone_number']
+    db.session.commit()
+    flash('User profile updated successfully.', 'success')
+    return redirect(url_for('edit_user_admin', user_id=user_id))
+
+@app.route('/user/<int:user_id>/update-credit', methods=['POST'])
+def update_in_store_credit(user_id):
+    user = User.query.get_or_404(user_id)
+    credit_change = float(request.form['credit_change'])
+    user.in_store_credit += credit_change
+    db.session.commit()
+    flash(f"In-store credit updated successfully. New balance: ${user.in_store_credit:.2f}", 'success')
+    return redirect(url_for('edit_user_admin', user_id=user_id))
 
 # User login
 @app.route('/login', methods=['GET', 'POST'])

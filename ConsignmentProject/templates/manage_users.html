@@ -9,7 +9,9 @@
             <th>Last Name</th>
             <th>Email</th>
             <th>Role</th>
-            <th>Action</th>
+            <th>In-Store Credit</th>
+            <th>View Profile</th>
+            <th class="action-column">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -19,7 +21,11 @@
             <td data-label="Last Name">{{ user.last_name }}</td>
             <td data-label="Email">{{ user.email }}</td>
             <td data-label="Role">{{ user.role.name }}</td>
-            <td data-label="Action">
+            <td data-label="In-Store Credit">${{ user.in_store_credit }}</td>
+            <td data-label="View Profile">
+                <a href="{{ url_for('edit_user_admin', user_id=user.user_id) }}">View/Edit</a>
+            </td>
+            <td data-label="Action" class="action-column">
                 <form action="{{ url_for('update_user_role', user_id=user.user_id) }}" method="post">
                     <select name="role" required>
                         {% for role in roles %}
@@ -32,7 +38,6 @@
                 </form>
             </td>
         </tr>
-        
         {% endfor %}
     </tbody>
 </table>
