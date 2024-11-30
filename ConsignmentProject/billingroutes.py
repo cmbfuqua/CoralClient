@@ -247,8 +247,9 @@ def create_bill(visit_id):
         db.session.commit()
         flash("Default line item added for maintenance visit.", "success")
 
-    # Handle form submission to add more line items
+    # Handle form submission to add line items or update the bill
     if form.validate_on_submit():
+        # Add new line item
         line_item = BillLineItem(
             BillID=bill.BillID,
             Description=form.description.data,
@@ -257,17 +258,26 @@ def create_bill(visit_id):
         )
         db.session.add(line_item)
         db.session.commit()
+
         flash("Line item added successfully.", "success")
 
-        # Calculate the TotalAmount by summing up all line item TotalPrices
+        # Update TotalAmount
         total_amount = sum(item.TotalPrice for item in bill.line_items)
         bill.TotalAmount = total_amount
 
-        # Commit the changes to update the TotalAmount in the database
+        # Check if the bill is marked as paid
+        if request.form.get('mark_as_paid'):
+            bill.IsPaid = 1
+            flash("Bill marked as Paid.", "success")
+        else:
+            bill.IsPaid = 0
+
+        # Commit changes to the database
         db.session.commit()
 
-    # Get the updated bill with all line items
-    bill = Bill.query.get(bill.BillID)
+    # Calculate total amount and ensure it's displayed correctly
+    total_amount = sum(item.TotalPrice for item in bill.line_items)
+    bill.TotalAmount = total_amount
 
     return render_template(
         'billing/create_bill_with_items.html',
@@ -275,6 +285,21 @@ def create_bill(visit_id):
         bill=bill,
         visit=visit
     )
+
+@app.route('/process_bill_status/<int:bill_id>', methods=['POST'])
+@login_required
+def process_bill_status(bill_id):
+    bill = Bill.query.get_or_404(bill_id)
+
+    if request.form.get('mark_as_paid'):  # Checkbox is checked
+        bill.IsPaid = 1
+        flash("Bill has been marked as Paid.", "success")
+        db.session.commit()
+        return redirect(url_for('create_maintenance_visit'))  # Redirect to maintenance visit creation
+    
+    # Checkbox not checked, stay on the same page
+    flash("Bill remains Unpaid.", "info")
+    return redirect(url_for('create_bill', visit_id=bill.visitID))  # Redirect back to the bill page
 
 # Mark bill as paid
 @app.route('/bill/<int:bill_id>/mark-paid', methods=['POST'])
@@ -378,25 +403,25 @@ def create_maintenance_visit():
     ]
     
     if form.validate_on_submit():
-        customer = User.query.filter_by(user_id = form.customer_id.data).first()
-        # save images
+        customer = User.query.filter_by(user_id=form.customer_id.data).first()
+        
+        # Handle before and after pictures
         imagepre = form.before_picture.data
         imagepost = form.after_picture.data
+        imagepre_url = None
+        imagepost_url = None
         if imagepre:
             filename = secure_filename(imagepre.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing',customer.maintenance_folder_path, filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], 'billing', customer.maintenance_folder_path, filename)
             imagepre.save(upload_path)
-            imagepre_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}" 
-        else:
-            imagepre_url = None
+            imagepre_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}"
         if imagepost:
             filename = secure_filename(imagepost.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],'billing',customer.maintenance_folder_path, filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], 'billing', customer.maintenance_folder_path, filename)
             imagepost.save(upload_path)
-            imagepost_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}" 
-        else:
-            imagepost_url = None
+            imagepost_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}"
         
+        # Create the visit
         visit = MaintenanceVisit(
             customer_id=form.customer_id.data,
             before_picture=imagepre_url,
@@ -414,7 +439,25 @@ def create_maintenance_visit():
         )
         db.session.add(visit)
         db.session.commit()
-        flash("Maintenance visit created.")
+
+        # Create the bill
+        bill = Bill(
+            visitID=visit.visit_id,
+            IsPaid=1 if request.form.get('mark_as_paid') else 0  # Mark as Paid or Unpaid
+        )
+        db.session.add(bill)
+        db.session.commit()
+        # Handle form submission to add more line items
+        line_item = BillLineItem(
+            BillID=bill.BillID,
+            Description='Maintenance',
+            Quantity=1,
+            UnitPrice=55
+        )
+        db.session.add(line_item)
+        db.session.commit()
+
+        flash("Maintenance visit created and bill processed.")
         return redirect(url_for('create_bill', visit_id=visit.visit_id))
 
     if not form.validate_on_submit():

@@ -51,8 +51,18 @@
     </ul>
 </div>
 
-<!-- Redirect Button -->
-<div style="margin-top: 50px;">
-    <a href="{{ url_for('create_maintenance_visit') }}" class="btn btn-secondary" >Submit Bill</a>
+<div style="margin-top: 20px;">
+    <form method="POST" action="{{ url_for('process_bill_status', bill_id=bill.BillID) }}">
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="markAsPaid" name="mark_as_paid">
+            <label class="form-check-label" for="markAsPaid">Mark Bill as Paid</label>
+        </div>
+
+        <!-- Submit Button -->
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Submit Bill</button>
+        </div>
+    </form>
 </div>
+
 {% endblock %}

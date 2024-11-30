@@ -1,3 +1,5 @@
-No bill is created when the maintenance is created
-create folder structure for when a customer is added as maintenance
-   in the uploads/billing/{customername}/file
+create a way for users to reset their password. 
+
+add bill paid to bill creation if they give john cash on the spot
+
+create file management system for deleting old files?
