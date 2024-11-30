@@ -94,6 +94,7 @@ def edit_user():
         current_user.last_name = form.last_name.data
         current_user.dob = form.dob.data
         current_user.phone_number = form.phone_number.data
+        current_user.in_store_credit = form.in_store_credit.data
         db.session.commit()
         flash('Your profile has been updated!', 'success')
         return redirect(url_for('home'))
