@@ -6,8 +6,10 @@ from reportlab.pdfgen import canvas
 from sqlalchemy.orm import joinedload
 from io import BytesIO
 from flask_login import current_user, login_required
+
 import os
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
 
 from models import User
 from billingmodels import *
@@ -20,18 +22,17 @@ mail = Mail(app)
 #################################################
 
 
-from concurrent.futures import ThreadPoolExecutor
-from flask import jsonify, current_app  # For managing context
 
 @app.route('/generate_invoices_all/')
 def generate_invoices_all():
     month = request.args.get('month')
     month = int(month)  # Ensure month is numeric
-
+    one_year_ago = datetime.now() - timedelta(days=365)
     # Query the bills for the given month
     bills = Bill.query.filter(
         db.func.extract('month', Bill.CreatedAt) == month,
-        Bill.IsPaid == False
+        Bill.IsPaid == False,
+        Bill.CreatedAt >= one_year_ago
     ).all()
 
     # Group bills by customer
@@ -103,13 +104,15 @@ def generate_invoices_customer(customer_id):
     month = int(month)  # Ensure month is numeric
     
     # Query for the bills based on the month and customer_id
+    one_year_ago = datetime.now() - timedelta(days=365)
     bills = (
         db.session.query(Bill)
         .join(MaintenanceVisit)
         .filter(
             db.func.extract('month', Bill.CreatedAt) == month,
             MaintenanceVisit.customer_id == customer_id,
-            Bill.IsPaid == False
+            Bill.IsPaid == False,
+            Bill.CreatedAt >= one_year_ago
         )
         .options(joinedload(Bill.visit))
         .all()
@@ -198,7 +201,7 @@ def send_email(subject, recipient, file_path):
 # View all bills
 @app.route('/view_all_bills')
 def view_all_bills():
-    from datetime import datetime
+    
 
     # Get current date and determine the first day of the month
     now = datetime.now()
