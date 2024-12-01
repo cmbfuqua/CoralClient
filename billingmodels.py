@@ -35,7 +35,7 @@ class Bill(db.Model):
     PaidAt = db.Column(db.Date, nullable=True)
     Notes = db.Column(db.Text, nullable=True)
 
-    line_items = db.relationship('billlineitem', backref='bill', cascade="all, delete-orphan")
+    line_items = db.relationship('billlineitem', backref='bills', cascade="all, delete-orphan")
 
     # Correct the relationship and use `back_populates`
     visit = db.relationship('maintenance_visit', back_populates='bill')
