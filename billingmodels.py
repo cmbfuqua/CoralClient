@@ -1,7 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from DB import db,app
+from DB import db, app
 from datetime import datetime
-#from models import User
 
 class MaintenanceVisit(db.Model):
     __tablename__ = 'maintenance_visits'
@@ -22,7 +21,7 @@ class MaintenanceVisit(db.Model):
     date_of_visit = db.Column(db.DateTime, default=datetime.now())
 
     # Correct the relationship and use `back_populates`
-    bill = db.relationship('bills', back_populates='visit', uselist=False)
+    bill = db.relationship('Bill', back_populates='visit', uselist=False)
     customer = db.relationship('User', backref='maintenance_visits', uselist=False)
 
 class Bill(db.Model):
@@ -35,10 +34,10 @@ class Bill(db.Model):
     PaidAt = db.Column(db.Date, nullable=True)
     Notes = db.Column(db.Text, nullable=True)
 
-    line_items = db.relationship('billlineitem', backref='bills', cascade="all, delete-orphan")
+    line_items = db.relationship('BillLineItem', backref='bill', cascade="all, delete-orphan")
 
     # Correct the relationship and use `back_populates`
-    visit = db.relationship('maintenance_visit', back_populates='bills')
+    visit = db.relationship('MaintenanceVisit', back_populates='bill')
 
 class BillLineItem(db.Model):
     __tablename__ = 'billlineitem'
