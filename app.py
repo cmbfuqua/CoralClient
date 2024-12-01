@@ -4,6 +4,7 @@ from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from billingroutes import *
+from waitress import serve
 
 from models import *
 from forms import *
@@ -656,4 +657,5 @@ def billing():
     return render_template('billing/basebilling.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    serve(app, host='0.0.0.0', port=5000)
+    #app.run(debug=True)

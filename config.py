@@ -4,15 +4,22 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your_secret_key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Pointing to SQL Server
-    SQLALCHEMY_DATABASE_URI = (
-        "mysql+pymysql://{username}:{password}@localhost:3306/{database}"
-    ).format(
-        username="CoralClientSellerApp",  # Replace with your SQL Server username
-        password="A7mX9zQpL2vRw3Y",  # Replace with your SQL Server password
-        server="BEN_BLUE",         # Replace with your server name
-        database="CoralClientSeller",  # Replace with your database name
-        driver="ODBC Driver 17 for SQL Server"  # Ensure this driver is installed
-    )
+    dev = ("mysql+pymysql://{username}:{password}@localhost:3306/{database}"
+           ).format(username="CoralClientSellerApp",
+                    password="A7mX9zQpL2vRw3Y",
+                    database="CoralClientSeller")
+    prod = (
+            "mysql+pymysql://{username}:{password}@{host}:{port}/{database}"
+            ).format(
+                    username="root",  # Replace with your Railway database username
+                    password="frbXYJpvZFeTxKYQCFSmxeFGgDasxAJz",  # Replace with your Railway database password
+                    host="mysql.railway.internal",        # Host URL for Railway MySQL
+                    port="3306",                          # MySQL default port
+                    database="railway"         # The name of your database
+            )
+    
+    SQLALCHEMY_DATABASE_URI = prod
+
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static/uploads')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
