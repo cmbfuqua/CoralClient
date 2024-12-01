@@ -22,11 +22,11 @@ class MaintenanceVisit(db.Model):
     date_of_visit = db.Column(db.DateTime, default=datetime.now())
 
     # Correct the relationship and use `back_populates`
-    bill = db.relationship('Bill', back_populates='visit', uselist=False)
+    bill = db.relationship('bill', back_populates='visit', uselist=False)
     customer = db.relationship('User', backref='maintenance_visits', uselist=False)
 
 class Bill(db.Model):
-    __tablename__ = 'Bill'
+    __tablename__ = 'bill'
     BillID = db.Column(db.Integer, primary_key=True)
     visitID = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
     TotalAmount = db.Column(db.Float, nullable=False, default=0.00)
@@ -35,15 +35,15 @@ class Bill(db.Model):
     PaidAt = db.Column(db.Date, nullable=True)
     Notes = db.Column(db.Text, nullable=True)
 
-    line_items = db.relationship('BillLineItem', backref='bill', cascade="all, delete-orphan")
+    line_items = db.relationship('billlineitem', backref='bill', cascade="all, delete-orphan")
 
     # Correct the relationship and use `back_populates`
-    visit = db.relationship('MaintenanceVisit', back_populates='bill')
+    visit = db.relationship('maintenance_visit', back_populates='bill')
 
 class BillLineItem(db.Model):
-    __tablename__ = 'BillLineItem'
+    __tablename__ = 'billlineitem'
     LineItemID = db.Column(db.Integer, primary_key=True)
-    BillID = db.Column(db.Integer, db.ForeignKey('Bill.BillID'), nullable=False)
+    BillID = db.Column(db.Integer, db.ForeignKey('bill.BillID'), nullable=False)
     Description = db.Column(db.String(255), nullable=False)
     Quantity = db.Column(db.Integer, nullable=False, default=1)
     UnitPrice = db.Column(db.Numeric(10, 2), nullable=False)
