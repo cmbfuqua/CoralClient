@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     is_maintenance = db.Column(db.Boolean,nullable=False,default=0)
     in_store_credit = db.Column(db.Float)
     role = db.relationship('Role', backref='users')
+    PasswordReset = db.Column(db.Boolean,default = 0)
 
     @property
     def is_admin(self):

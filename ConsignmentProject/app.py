@@ -11,6 +11,9 @@ from DB import db, app
 
 import os
 from datetime import datetime
+import random
+import string
+
 
 # Initialize Flask app
 
@@ -131,6 +134,7 @@ def update_in_store_credit(user_id):
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter(
@@ -139,10 +143,31 @@ def login():
         ).first()
         if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
             login_user(user)
+            
+            if user.PasswordReset:  # Redirect if the password reset flag is set
+                return redirect(url_for('change_generated_password'))
+            
             return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check username/email and password', 'danger')
     return render_template('login.html', form=form)
+
+@app.route('/change_generated_password', methods=['GET', 'POST'])
+@login_required
+def change_generated_password():
+    if not current_user.PasswordReset:
+        return redirect(url_for('home'))  # Prevent access if reset is not required
+
+    form = ChangeGeneratedPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+        current_user.password_hash = hashed_password
+        current_user.PasswordReset = 0  # Reset the flag
+        db.session.commit()
+        flash('Your password has been updated.', 'success')
+        return redirect(url_for('home'))
+
+    return render_template('change_generated_password.html', form=form)
 
 
 # User logout
@@ -152,6 +177,55 @@ def logout():
     logout_user()  # Logs out the current user
     flash('You have been logged out.', 'info')  # Optional feedback message
     return redirect(url_for('home'))  # Redirect to the homepage
+
+
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter(
+            (User.email == form.username_or_email.data) |
+            (User.username == form.username_or_email.data)
+        ).first()
+
+        if user:
+            # Generate a new 6-character password
+            new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+            user.password_hash = bcrypt.generate_password_hash(new_password)
+            user.PasswordReset = 1
+            db.session.commit()
+
+            # Send email with the new password
+            msg = Message('Password Reset', recipients=[user.email])
+            msg.body = f'Your new password is: {new_password}'
+            mail.send(msg)
+
+            flash('A new password has been sent to your email.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('No user found with that username or email.', 'danger')
+
+    return render_template('forgot_password.html', form=form)
+
+@app.route('/forgot_username', methods=['GET', 'POST'])
+def forgot_username():
+    form = ForgotUsernameForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+
+        if user:
+            # Send email with the username
+            msg = Message('Username Retrieval', recipients=[user.email])
+            msg.body = f'Your username is: {user.username}'
+            mail.send(msg)
+
+            flash('Your username has been sent to your email.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('No user found with that email.', 'danger')
+
+    return render_template('forgot_username.html', form=form)
 
 ###############################################################
 # Content pages

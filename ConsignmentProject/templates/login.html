@@ -14,8 +14,11 @@
     </div>
     <div>
         <button type="submit" class="btn btn-primary">Login</button>
-
     </div>
 </form>
 <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a>.</p>
+<div class="forgot-links" style="margin-top: 30px;">
+    <a href="{{ url_for('forgot_password') }}" class="btn btn-link">Forgot Password?</a>
+    <a href="{{ url_for('forgot_username') }}" class="btn btn-link">Forgot Username?</a>
+</div>
 {% endblock %}

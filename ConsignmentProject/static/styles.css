@@ -646,3 +646,18 @@ main {
     background-color: var(--hover-color);
     color: var(--tooltip-text-color);
 }
+
+.forgot-links {
+    margin-top: 50px;
+    text-align: center; /* Center-aligns the links */
+}
+
+.forgot-links a {
+    margin: 0 10px; /* Adds space between the links */
+    text-decoration: none; /* Removes underline */
+    color:var(--text-color); /* Optional: Matches Bootstrap's link color */
+}
+
+.forgot-links a:hover {
+    text-decoration: underline; /* Adds underline on hover for better UX */
+}

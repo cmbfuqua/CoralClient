@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Forgot Username</h2>
+<form action="{{ url_for('forgot_username') }}" method="post">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.email.label }}
+        {{ form.email(class="form-control") }}
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Send Username</button>
+    </div>
+</form>
+<!-- Inside base.html -->
+
+
+{% endblock %}

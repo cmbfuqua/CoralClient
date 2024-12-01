@@ -1,11 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, DecimalField, TextAreaField, DateField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, DecimalField, TextAreaField, DateField, EmailField
 from flask_wtf.file import FileField,FileAllowed
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Regexp
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=20)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = EmailField('Email', validators=[DataRequired(), Email()])
     first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=50)])
     last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=50)])
     dob = DateField('Date of Birth', validators=[DataRequired()], format='%Y-%m-%d')
@@ -50,4 +50,32 @@ class UpgradeUserForm(FlaskForm):
 class CreateOrderForm(FlaskForm):
     buyer_id = SelectField('Selected Buyer', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Create Order')
+
+class ForgotPasswordForm(FlaskForm):
+    username_or_email = StringField('Username or Email', validators=[DataRequired()])
+    submit = SubmitField('Reset Password')
+
+class ForgotUsernameForm(FlaskForm):
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Send Username')
+
+from flask_wtf import FlaskForm
+from wtforms import PasswordField, SubmitField
+from wtforms.validators import DataRequired, EqualTo, Length
+
+class ChangeGeneratedPasswordForm(FlaskForm):
+    new_password = PasswordField('New Password', validators=[
+        DataRequired(),
+        Length(min=6, message="Password must be at least 6 characters.")
+    ])
+    confirm_password = PasswordField('Confirm Password', validators=[
+        DataRequired(),
+        EqualTo('new_password', message="Passwords must match.")
+    ])
+    submit = SubmitField('Update Password')
+
+
+
+
+
 
