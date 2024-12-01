@@ -22,7 +22,7 @@ class MaintenanceVisit(db.Model):
     date_of_visit = db.Column(db.DateTime, default=datetime.now())
 
     # Correct the relationship and use `back_populates`
-    bill = db.relationship('bill', back_populates='visit', uselist=False)
+    bill = db.relationship('bills', back_populates='visit', uselist=False)
     customer = db.relationship('User', backref='maintenance_visits', uselist=False)
 
 class Bill(db.Model):
@@ -38,7 +38,7 @@ class Bill(db.Model):
     line_items = db.relationship('billlineitem', backref='bills', cascade="all, delete-orphan")
 
     # Correct the relationship and use `back_populates`
-    visit = db.relationship('maintenance_visit', back_populates='bill')
+    visit = db.relationship('maintenance_visit', back_populates='bills')
 
 class BillLineItem(db.Model):
     __tablename__ = 'billlineitem'
