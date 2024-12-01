@@ -1,0 +1,36 @@
+insert into item_types (name) values('Coral'),('Fish'),('Equipment');
+INSERT INTO item_subtypes (item_type_id, name) VALUES
+(1, 'Large Polyp Stony (LPS)'),
+(1, 'Small Polyp Stony (SPS)'),
+(1, 'Soft Corals'),
+(2, 'Inverts'),
+(2, 'Angelfish'),
+(2, 'Clownfish'),
+(2, 'Tangs'),
+(2, 'Wrass'),
+(2, 'Gobies'),
+(2, 'Blennies'),
+(2, 'Dottybacks'),
+(2, 'Anthias'),
+(2, 'Triggerfish'),
+(2, 'Groupers and Basslets'),
+(2, 'Cardinalfish'),
+(2, 'Butterflyfish'),
+(2, 'Hawkfish'),
+(2, 'Eels'),
+(2, 'Lionfish'),
+(2, 'Damsels and Chromis'),
+(2, 'Puffers'),
+(2, 'Rabbitfish'),
+(2, 'Mandarinfish'),
+(2, 'Other'),
+(3, 'Skimmers'),
+(3, 'Pumps'),
+(3, 'Tanks'),
+(3, 'Wave Maker'),
+(3, 'Thermometer'),
+(3, 'Testing Kits'),
+(3, 'Automation');
+
+insert into roles (name) values ('User'),('Seller'),('Admin')
+

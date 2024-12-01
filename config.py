@@ -5,7 +5,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Pointing to SQL Server
     SQLALCHEMY_DATABASE_URI = (
-        "mssql+pyodbc://{username}:{password}@{server}/{database}?driver={driver}"
+        "mysql+pymysql://{username}:{password}@localhost:3306/{database}"
     ).format(
         username="CoralClientSellerApp",  # Replace with your SQL Server username
         password="A7mX9zQpL2vRw3Y",  # Replace with your SQL Server password

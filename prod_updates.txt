@@ -1,0 +1,5 @@
+to push the database changes to prod, first run sync_to_railway.bat
+
+then run 'railway connect mysql'
+
+then 'source ./SQLStuff/Backup.sql'
