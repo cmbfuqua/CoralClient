@@ -665,7 +665,7 @@ def data(filename):
     return send_from_directory('/data', filename)
 @app.route('/list_files')
 def list_files():
-    upload_folder = '/app/data/uploads'  # Your volume path
+    upload_folder = '/data/uploads'  # Your volume path
     files = os.listdir(upload_folder)
     return jsonify(files)
 if __name__ == '__main__':
