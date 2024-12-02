@@ -416,6 +416,7 @@ def create_maintenance_visit():
         if imagepre:
             filename = secure_filename(imagepre.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
+            print(upload_path)
             os.makedirs(upload_path, exist_ok=True)
             imagepre.save(os.path.join(upload_path,filename))
             imagepre_url = f"uploads/{customer.maintenance_folder_path}/billing/images/{filename}"
