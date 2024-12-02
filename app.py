@@ -662,7 +662,7 @@ def billing():
 # Route to serve files from /data/uploads
 @app.route('/data/<filename>')
 def data(filename):
-    return send_from_directory('/data', filename)
+    return send_from_directory('/data/uploads/BenFuqua1', 'IMG_3318.png')
 @app.route('/list_files')
 def list_files():
     upload_folder = '/data/uploads/BenFuqua1'  # Your volume path where files are stored
