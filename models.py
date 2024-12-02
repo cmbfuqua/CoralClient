@@ -30,7 +30,7 @@ class User(UserMixin, db.Model):
     
     @property
     def maintenance_folder_path(self):
-        return self.first_name + self.last_name + str(self.user_id)
+        return str(self.first_name).strip() + str(self.last_name).strip() + str(self.user_id)
     
     def get_id(self):
         return str(self.user_id)

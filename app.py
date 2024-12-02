@@ -1,3 +1,4 @@
+from flask import send_from_directory
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_mail import Mail, Message
@@ -657,14 +658,16 @@ def billing():
     
     return render_template('billing/basebilling.html')
 
-from flask import send_from_directory
 
 # Route to serve files from /data/uploads
-@app.route('/data/uploads/<filename>')
+@app.route('/data/<filename>')
 def data(filename):
     return send_from_directory('/data', filename)
-
-
+@app.route('/list_files')
+def list_files():
+    upload_folder = '/app/data/uploads'  # Your volume path
+    files = os.listdir(upload_folder)
+    return jsonify(files)
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=5000)
     #app.run(debug=True)
