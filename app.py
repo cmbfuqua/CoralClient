@@ -665,9 +665,14 @@ def data(filename):
     return send_from_directory('/data', filename)
 @app.route('/list_files')
 def list_files():
-    upload_folder = '/data/uploads/BenFuqua1'  # Your volume path
-    files = os.listdir(upload_folder)
-    return jsonify(files)
+    upload_folder = '/app/data/uploads'  # Your volume path where files are stored
+    files = os.listdir(upload_folder)  # List all files in the directory
+
+    # Generate the file URLs for each file in the uploads folder
+    file_urls = [f'/data/uploads/{file}' for file in files if file.endswith(('jpg', 'png', 'gif'))]  # Filter for image files
+
+    # Pass the file URLs to the template
+    return render_template('file_list.html', file_urls=file_urls)
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=5000)
     #app.run(debug=True)
