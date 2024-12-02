@@ -286,9 +286,10 @@ def consignment():
         image = form.image.data
         if image:
             filename = secure_filename(image.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            image.save(upload_path)
-            image_url = f"uploads/{filename}"  # Store the relative path
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path)
+            os.makedirs(upload_path, exist_ok=True)
+            image.save(os.path.join(upload_path,filename))
+            image_url = f"uploads/{current_user.maintenance_folder_path}/{filename}"  # Store the relative path
         else:
             image_url = None
 
@@ -357,7 +358,7 @@ def edit_item(item_id):
                 filename = secure_filename(file.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
-                product.image_url = f'static/uploads/{filename}'
+                product.image_url = f'data/uploads/{current_user.maintenance_folder}{current_user.user_id}/{filename}'
             else:
                 flash('Invalid file type for image.', 'danger')
                 return redirect(url_for('edit_item', item_id=item_id))
@@ -655,6 +656,14 @@ def send_cancellation_notification(buyer, product, seller,order):
 def billing():
     
     return render_template('billing/basebilling.html')
+
+from flask import send_from_directory
+
+# Route to serve files from /data/uploads
+@app.route('/data/uploads/<filename>')
+def data(filename):
+    return send_from_directory('/data', filename)
+
 
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=5000)

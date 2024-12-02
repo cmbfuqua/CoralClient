@@ -30,7 +30,7 @@ class Bill(db.Model):
     visitID = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
     TotalAmount = db.Column(db.Float, nullable=False, default=0.00)
     IsPaid = db.Column(db.Boolean, default=False)
-    CreatedAt = db.Column(db.Date, default=datetime.now())
+    CreatedAt = db.Column(db.Date, default=datetime.now().date())
     PaidAt = db.Column(db.Date, nullable=True)
     Notes = db.Column(db.Text, nullable=True)
 

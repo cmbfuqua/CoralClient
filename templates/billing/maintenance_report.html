@@ -27,7 +27,7 @@
     <div>
         {% if visit.before_picture %}
             <p><strong>Before Picture:</strong></p>
-            <img src="{{ url_for('static', filename=visit.before_picture) }}" alt="Before Picture" style="max-width: 300px;">
+            <img src="{{ url_for('data', filename=visit.before_picture) }}" alt="Before Picture" style="max-width: 300px;">
         {% else %}
             <p>No before picture available.</p>
         {% endif %}
@@ -35,7 +35,7 @@
     <div>
         {% if visit.after_picture %}
             <p><strong>After Picture:</strong></p>
-            <img src="{{ url_for('static', filename=visit.after_picture) }}" alt="After Picture" style="max-width: 300px;">
+            <img src="{{ url_for('data', filename=visit.after_picture) }}" alt="After Picture" style="max-width: 300px;">
         {% else %}
             <p>No after picture available.</p>
         {% endif %}

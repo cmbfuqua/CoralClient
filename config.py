@@ -20,9 +20,8 @@ class Config:
     
     SQLALCHEMY_DATABASE_URI = prod
 
-    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static/uploads')
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), '/data/uploads')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
 
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587

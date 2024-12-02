@@ -144,7 +144,7 @@ def generate_invoices_customer(customer_id):
 
 def create_pdf(bills, customer_name, customer_id, file_name):
     # Define the file path
-    directory = f"static/uploads/billing/{customer_name}{customer_id}/invoices/"
+    directory = f"data/uploads/{customer_name}/billing/"
     os.makedirs(directory, exist_ok=True)
     file_path = os.path.join(directory, file_name)
 
@@ -153,7 +153,7 @@ def create_pdf(bills, customer_name, customer_id, file_name):
     pdf.setTitle(f"Invoice - {customer_name}")
 
     # Add logo
-    pdf.drawImage("static/images/logo.png", 50, 750, width=200, height=50)
+    pdf.drawImage("data/images/logo.png", 50, 750, width=200, height=50)
 
     # Add title
     pdf.setFont("Helvetica-Bold", 16)
@@ -204,15 +204,15 @@ def view_all_bills():
     
 
     # Get current date and determine the first day of the month
-    now = datetime.now()
-    start_of_month = now.replace(day=1).date()
+    now = datetime.now().date()
+    start_of_month = now.replace(day=1)
     
     # Query bills and group them
     bills = Bill.query.all()
-    unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt >= start_of_month]
-    paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt >= start_of_month]
-    previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt < start_of_month]
-    previous_paid = [bill for bill in bills if bill.IsPaid and bill.CreatedAt < start_of_month]
+    unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
+    paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
+    previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() < start_of_month]
+    previous_paid = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() < start_of_month]
     
     return render_template(
         'billing/view_all_bills.html',
@@ -357,7 +357,7 @@ def submit_maintenance_customer():
 
     # Create a unique folder for the customer
     
-    folder_path = os.path.join('static', 'uploads', 'billing', customer.maintenance_folder_path)
+    folder_path = os.path.join('data', 'uploads', customer.maintenance_folder_path,'billing')
 
     try:
         os.makedirs(folder_path, exist_ok=True) # exists_ok=True will check to see if the folder already exists, and if it does don't do anything
@@ -415,14 +415,16 @@ def create_maintenance_visit():
         imagepost_url = None
         if imagepre:
             filename = secure_filename(imagepre.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], 'billing', customer.maintenance_folder_path, filename)
-            imagepre.save(upload_path)
-            imagepre_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}"
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
+            os.makedirs(upload_path, exist_ok=True)
+            imagepre.save(os.path.join(upload_path,filename))
+            imagepre_url = f"uploads/{customer.maintenance_folder_path}/billing/images/{filename}"
         if imagepost:
             filename = secure_filename(imagepost.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], 'billing', customer.maintenance_folder_path, filename)
-            imagepost.save(upload_path)
-            imagepost_url = f"uploads/billing/{customer.maintenance_folder_path}/{filename}"
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
+            os.makedirs(upload_path, exist_ok=True)
+            imagepost.save(os.path.join(upload_path,filename))
+            imagepost_url = f"uploads/{customer.maintenance_folder_path}/billing/images/{filename}"
         
         # Create the visit
         visit = MaintenanceVisit(
