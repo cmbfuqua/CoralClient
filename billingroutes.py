@@ -6,6 +6,7 @@ from reportlab.pdfgen import canvas
 from sqlalchemy.orm import joinedload
 from io import BytesIO
 from flask_login import current_user, login_required
+from google.cloud import storage
 
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -14,7 +15,7 @@ from datetime import datetime, timedelta
 from models import User
 from billingmodels import *
 from billingforms import *
-
+from app import upload_image_to_gcs
 
 mail = Mail(app)
 #################################################
@@ -142,14 +143,26 @@ def generate_invoices_customer(customer_id):
                            customer=customer, 
                            success_message=success_message)
 
+
 def create_pdf(bills, customer_name, customer_id, file_name):
-    # Define the file path
-    directory = f"data/uploads/{customer_name}/billing/"
-    os.makedirs(directory, exist_ok=True)
-    file_path = os.path.join(directory, file_name)
+    """
+    Generate a PDF and upload it to Google Cloud Storage.
+
+    Args:
+        bills (list): List of bill objects containing CreatedAt, BillID, and TotalAmount.
+        customer_name (str): Name of the customer.
+        customer_id (int): ID of the customer.
+        file_name (str): Name of the PDF file (e.g., 'invoice.pdf').
+        bucket_name (str): Google Cloud Storage bucket name.
+
+    Returns:
+        str: The public URL of the uploaded PDF file.
+    """
+    # Create an in-memory buffer for the PDF
+    pdf_buffer = BytesIO()
 
     # Generate PDF
-    pdf = canvas.Canvas(file_path, pagesize=letter)
+    pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
     pdf.setTitle(f"Invoice - {customer_name}")
 
     # Add logo
@@ -184,8 +197,25 @@ def create_pdf(bills, customer_name, customer_id, file_name):
     pdf.setFont("Helvetica-Bold", 12)
     pdf.drawString(50, y_position - 20, f"Total Amount: ${total_amount:.2f}")
 
+    # Finalize and save the PDF
     pdf.save()
-    return file_path
+
+    # Reset the buffer's position to the beginning
+    pdf_buffer.seek(0)
+
+    # Upload the PDF to Google Cloud Storage
+    storage_client = storage.Client()
+    bucket = storage_client.bucket('corals4cheapbucket')
+    destination_path = os.path.join(app.config['UPLOAD_FOLDER'],customer_name,'billing',file_name)
+    blob = bucket.blob(destination_path)
+    blob.upload_from_file(pdf_buffer, content_type='application/pdf')
+    blob.make_public()
+
+        # Construct the public URL to access the file
+    image_url = blob.public_url  # Public URL for the file
+
+    # Return the public URL of the uploaded file
+    return image_url
 
 def send_email(subject, recipient, file_path):
     with open(file_path, 'rb') as pdf_file:
@@ -416,16 +446,13 @@ def create_maintenance_visit():
         if imagepre:
             filename = secure_filename(imagepre.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
-            print(upload_path)
             os.makedirs(upload_path, exist_ok=True)
-            imagepre.save(os.path.join(upload_path,filename))
-            imagepre_url = f"uploads/{customer.maintenance_folder_path}/billing/images/{filename}"
+            imagepre_url = upload_image_to_gcs(upload_path,filename)
         if imagepost:
             filename = secure_filename(imagepost.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
             os.makedirs(upload_path, exist_ok=True)
-            imagepost.save(os.path.join(upload_path,filename))
-            imagepost_url = f"uploads/{customer.maintenance_folder_path}/billing/images/{filename}"
+            imagepost_url = upload_image_to_gcs(upload_path,filename)
         
         # Create the visit
         visit = MaintenanceVisit(

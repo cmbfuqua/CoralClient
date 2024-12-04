@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from billingroutes import *
 from waitress import serve
+from google.cloud import storage
 
 from models import *
 from forms import *
@@ -289,8 +290,8 @@ def consignment():
             filename = secure_filename(image.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path)
             os.makedirs(upload_path, exist_ok=True)
-            image.save(os.path.join(upload_path,filename))
-            image_url = f"uploads/{current_user.maintenance_folder_path}/{filename}"  # Store the relative path
+            image_url = upload_image_to_gcs(upload_path,filename)
+            
         else:
             image_url = None
 
@@ -357,9 +358,9 @@ def edit_item(item_id):
             file = form.image.data
             if allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                product.image_url = f'data/uploads/{current_user.maintenance_folder}{current_user.user_id}/{filename}'
+                upload_path = os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path)
+                os.makedirs(upload_path, exist_ok=True)
+                product.image_url = upload_image_to_gcs(upload_path,filename)
             else:
                 flash('Invalid file type for image.', 'danger')
                 return redirect(url_for('edit_item', item_id=item_id))
@@ -639,7 +640,7 @@ def send_dropoff_notification(buyer, product, seller,order):
     mail.send(msg)
 
 def send_pickup_notification(buyer, product, seller,order):
-    msg = Message("Coral Pickup Complete", recipients=[buyer.email, seller.email])
+    msg = Message("Coral Pickup Complete", recipients=[seller.email])
     msg.html = render_template('pickup_notification.html', buyer=buyer, seller=seller, product=product,order=order)
     mail.send(msg)
 
@@ -648,6 +649,35 @@ def send_cancellation_notification(buyer, product, seller,order):
     msg.html = render_template('cancellation_notification.html', seller=seller, product=product, buyer=buyer,order=order)
     mail.send(msg)
 
+def upload_image_to_gcs(user_folder,file):
+    if file:
+        # Secure the filename to prevent malicious file names
+        filename = secure_filename(file.filename)
+        BUCKET_NAME = 'corals4cheapbucket'
+        # Get the bucket from GCS
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(BUCKET_NAME)
+
+        # Define the blob path in GCS (user folder structure)
+        blob_path = f"{user_folder}/{filename}"
+
+        # Create a new blob and upload the image file to GCS
+        blob = bucket.blob(blob_path)
+        blob.upload_from_file(file)
+
+        # Construct the public URL to access the file (if public access is enabled)
+        image_url = f"gs://{BUCKET_NAME}/{blob_path}"  # The GCS URI
+
+        # Optionally, if the file is publicly accessible, you can also generate a signed URL
+        blob.make_public()
+
+        # Construct the public URL to access the file
+        image_url = blob.public_url  # Public URL for the file
+
+    else:
+        image_url = None
+
+    return image_url
 
 ################################################
 # billing
@@ -674,5 +704,5 @@ def list_files():
     # Pass the file URLs to the template
     return render_template('file_list.html', file_urls=file_urls)
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=5000)
+    serve(app, host='0.0.0.0', port=int(os.environ.get('PORT',8080)))
     #app.run(debug=True)
