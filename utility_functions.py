@@ -25,29 +25,23 @@ def send_order_notification(seller_email, product, order_number,buyer_first_name
     msg = Message(
         subject="New Order Created",
         recipients=[seller_email],
-        html=render_template(
-            'order_notification_email.html',  # Use an HTML template for the email body
-            product=product,
-            order_id=order_number,
-            buyer_first_name=buyer_first_name,
-            buyer_last_name=buyer_last_name,
-        )
+        html=render_template('emails/order_notification_email.html', product=product, order_id=order_number)
     )
     mail.send(msg)
 
 def send_dropoff_notification(buyer, product, seller,order):
     msg = Message("Coral Dropoff Notification", recipients=[buyer.email])
-    msg.html = render_template('dropoff_notification.html', buyer=buyer, product=product, seller=seller,order=order)
+    msg.html = render_template('emails/dropoff_notification.html', buyer=buyer, product=product, seller=seller,order=order)
     mail.send(msg)
 
 def send_pickup_notification(buyer, product, seller,order):
     msg = Message("Coral Pickup Complete", recipients=[seller.email])
-    msg.html = render_template('pickup_notification.html', buyer=buyer, seller=seller, product=product,order=order)
+    msg.html = render_template('emails/pickup_notification.html', buyer=buyer, seller=seller, product=product,order=order)
     mail.send(msg)
 
 def send_cancellation_notification(buyer, product, seller,order):
     msg = Message("Order Canceled", recipients=[buyer.email,seller.email])
-    msg.html = render_template('cancellation_notification.html', seller=seller, product=product, buyer=buyer,order=order)
+    msg.html = render_template('emails/cancellation_notification.html', seller=seller, product=product, buyer=buyer,order=order)
     mail.send(msg)
 
 def upload_image_to_gcs(user_folder, file):
@@ -83,19 +77,5 @@ def upload_image_to_gcs(user_folder, file):
     else:
         return None
 
-
-
-from google.cloud import storage
-from datetime import timedelta
-
-def generate_signed_url(bucket_name, blob_name, expiration_time=3600):
-    """Generate a signed URL for accessing a GCS object."""
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-
-    # Generate signed URL valid for `expiration_time` seconds
-    url = blob.generate_signed_url(expiration=timedelta(seconds=expiration_time))
-    return url
 
 
