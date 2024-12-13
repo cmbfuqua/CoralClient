@@ -4,10 +4,13 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your_secret_key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Pointing to SQL Server
-    dev = ("mysql+pymysql://{username}:{password}@localhost:3306/{database}"
-           ).format(username="CoralClientSellerApp",
-                    password="A7mX9zQpL2vRw3Y",
-                    database="CoralClientSeller")
+    dev = (
+    "mysql+pymysql://{username}:{password}@127.0.0.1:3306/{database}"
+).format(
+    username="BenFuqua", 
+    password=quote("2001053597Rex?"), 
+    database="CoralClientSeller"
+)
     prod = (
     "mysql+pymysql://{username}:{password}@/{database}?unix_socket=/cloudsql/{instance_connection_name}"
 ).format(
@@ -18,6 +21,8 @@ class Config:
 )
     
     SQLALCHEMY_DATABASE_URI = prod
+
+    GOOGLE_APPLICATION_CREDENTIALS = r"C:\Users\benja\Desktop\corals4cheap-65a82a68dbed.json"
 
     UPLOAD_FOLDER = '/data'
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

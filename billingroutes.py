@@ -11,11 +11,11 @@ from google.cloud import storage
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
+from utility_functions import *
 
 from models import User
 from billingmodels import *
 from billingforms import *
-from app import upload_image_to_gcs
 
 mail = Mail(app)
 #################################################
@@ -389,11 +389,6 @@ def submit_maintenance_customer():
     
     folder_path = os.path.join('data', 'uploads', customer.maintenance_folder_path,'billing')
 
-    try:
-        os.makedirs(folder_path, exist_ok=True) # exists_ok=True will check to see if the folder already exists, and if it does don't do anything
-    except Exception as e:
-        return jsonify({'success': False, 'message': f"Error creating folder: {str(e)}"}), 500
-
     return jsonify({'success': True, 'message': 'Customer updated and folder created successfully.'})
 
 
@@ -437,22 +432,17 @@ def create_maintenance_visit():
     
     if form.validate_on_submit():
         customer = User.query.filter_by(user_id=form.customer_id.data).first()
-        
         # Handle before and after pictures
         imagepre = form.before_picture.data
         imagepost = form.after_picture.data
         imagepre_url = None
         imagepost_url = None
         if imagepre:
-            filename = secure_filename(imagepre.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
-            os.makedirs(upload_path, exist_ok=True)
-            imagepre_url = upload_image_to_gcs(upload_path,filename)
+            imagepre_url = upload_image_to_gcs(upload_path,imagepre)
         if imagepost:
-            filename = secure_filename(imagepost.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
-            os.makedirs(upload_path, exist_ok=True)
-            imagepost_url = upload_image_to_gcs(upload_path,filename)
+            imagepost_url = upload_image_to_gcs(upload_path,imagepost)
         
         # Create the visit
         visit = MaintenanceVisit(

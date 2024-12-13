@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from DB import db, app
 from datetime import datetime
+from utility_functions import generate_signed_url
 
 class MaintenanceVisit(db.Model):
     __tablename__ = 'maintenance_visits'
@@ -25,7 +26,7 @@ class MaintenanceVisit(db.Model):
     customer = db.relationship('User', backref='maintenance_visits', uselist=False)
 
 class Bill(db.Model):
-    __tablename__ = 'bill'
+    __tablename__ = 'Bill'
     BillID = db.Column(db.Integer, primary_key=True)
     visitID = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
     TotalAmount = db.Column(db.Float, nullable=False, default=0.00)
@@ -40,9 +41,9 @@ class Bill(db.Model):
     visit = db.relationship('MaintenanceVisit', back_populates='bill')
 
 class BillLineItem(db.Model):
-    __tablename__ = 'billlineitem'
+    __tablename__ = 'BillLineItem'
     LineItemID = db.Column(db.Integer, primary_key=True)
-    BillID = db.Column(db.Integer, db.ForeignKey('bill.BillID'), nullable=False)
+    BillID = db.Column(db.Integer, db.ForeignKey('Bill.BillID'), nullable=False)
     Description = db.Column(db.String(255), nullable=False)
     Quantity = db.Column(db.Integer, nullable=False, default=1)
     UnitPrice = db.Column(db.Numeric(10, 2), nullable=False)

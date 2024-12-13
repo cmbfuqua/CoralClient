@@ -11,6 +11,7 @@ from google.cloud import storage
 from models import *
 from forms import *
 from DB import db, app
+from utility_functions import *
 
 import os
 from datetime import datetime
@@ -25,7 +26,7 @@ bcrypt = Bcrypt(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 # Function to validate DB connection
 def validate_db_connection():
     """
@@ -287,10 +288,8 @@ def consignment():
     if form.validate_on_submit():
         image = form.image.data
         if image:
-            filename = secure_filename(image.filename)
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path)
-            os.makedirs(upload_path, exist_ok=True)
-            image_url = upload_image_to_gcs(upload_path,filename)
+            image_url = upload_image_to_gcs(upload_path,image)
             
         else:
             image_url = None
@@ -357,10 +356,8 @@ def edit_item(item_id):
         if form.image.data:
             file = form.image.data
             if allowed_file(file.filename):
-                filename = secure_filename(file.filename)
                 upload_path = os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path)
-                os.makedirs(upload_path, exist_ok=True)
-                product.image_url = upload_image_to_gcs(upload_path,filename)
+                product.image_url = upload_image_to_gcs(upload_path,file)
             else:
                 flash('Invalid file type for image.', 'danger')
                 return redirect(url_for('edit_item', item_id=item_id))
@@ -610,74 +607,6 @@ def all_orders():
 
     return render_template('all_orders.html', orders=orders)
 
-
-############################################
-# utility functions
-############################################
-def allowed_file(filename):
-    
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def send_order_notification(seller_email, product, order_number,buyer_first_name,buyer_last_name):
-
-    
-    msg = Message(
-        subject="New Order Created",
-        recipients=[seller_email],
-        html=render_template(
-            'order_notification_email.html',  # Use an HTML template for the email body
-            product=product,
-            order_id=order_number,
-            buyer_first_name=buyer_first_name,
-            buyer_last_name=buyer_last_name,
-        )
-    )
-    mail.send(msg)
-
-def send_dropoff_notification(buyer, product, seller,order):
-    msg = Message("Coral Dropoff Notification", recipients=[buyer.email])
-    msg.html = render_template('dropoff_notification.html', buyer=buyer, product=product, seller=seller,order=order)
-    mail.send(msg)
-
-def send_pickup_notification(buyer, product, seller,order):
-    msg = Message("Coral Pickup Complete", recipients=[seller.email])
-    msg.html = render_template('pickup_notification.html', buyer=buyer, seller=seller, product=product,order=order)
-    mail.send(msg)
-
-def send_cancellation_notification(buyer, product, seller,order):
-    msg = Message("Order Canceled", recipients=[buyer.email,seller.email])
-    msg.html = render_template('cancellation_notification.html', seller=seller, product=product, buyer=buyer,order=order)
-    mail.send(msg)
-
-def upload_image_to_gcs(user_folder,file):
-    if file:
-        # Secure the filename to prevent malicious file names
-        filename = secure_filename(file.filename)
-        BUCKET_NAME = 'corals4cheapbucket'
-        # Get the bucket from GCS
-        storage_client = storage.Client()
-        bucket = storage_client.get_bucket(BUCKET_NAME)
-
-        # Define the blob path in GCS (user folder structure)
-        blob_path = f"{user_folder}/{filename}"
-
-        # Create a new blob and upload the image file to GCS
-        blob = bucket.blob(blob_path)
-        blob.upload_from_file(file)
-
-        # Construct the public URL to access the file (if public access is enabled)
-        image_url = f"gs://{BUCKET_NAME}/{blob_path}"  # The GCS URI
-
-        # Optionally, if the file is publicly accessible, you can also generate a signed URL
-        blob.make_public()
-
-        # Construct the public URL to access the file
-        image_url = blob.public_url  # Public URL for the file
-
-    else:
-        image_url = None
-
-    return image_url
 
 ################################################
 # billing

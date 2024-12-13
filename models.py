@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from DB import db,app
+from utility_functions import generate_signed_url
 
 # User model
 class User(UserMixin, db.Model):
@@ -90,6 +91,7 @@ class ConsignmentProduct(db.Model):
     item_type = db.relationship('ItemType', backref='consignment_products', lazy=True)
     item_subtype = db.relationship('ItemSubtype', backref='consignment_products', lazy=True)
     seller = db.relationship('User',backref = 'consignment_products',lazy=True)
+
 # Order model
 class Order(db.Model):
     __tablename__ = 'orders'

@@ -14,7 +14,7 @@
 <div class="item-list">
     {% for coral in corals %}
         <div class="item" data-item_subtype="{{coral.item_subtype_id}}">
-            <img src="{{ url_for('data', filename=coral.image_url) }}" alt="{{ coral.name }}">
+            <img src="{{ coral.image_url }}" alt="{{ coral.name }}">
             <p>{{ coral.name }} - ${{ coral.price }}</p>
             {% if coral.order_status == 'IP' %}
                 <span>Item on hold</span>
