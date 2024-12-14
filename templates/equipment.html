@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Equipment for Sale</h2>
+<!-- Filter Dropdown -->
+<div class="filter">
+    <label for="subtype_filter">Filter by type:</label>
+    <select id="subtype_filter" onchange="filterItems()">
+        <option value="all">All</option>
+        {% for subtype in equipment_subtypes %}
+            <option value="{{ subtype.item_subtype_id }}">{{ subtype.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="item-list">
+    {% for equipment in equipment %}
+        <div class="item" data-subtype="{{ equipment.item_subtype_id }}">
+            <img src="{{ equipment.image_url }}" alt="{{ equipment.name }}">
+            <p>{{ equipment.name }} - ${{ equipment.price }}</p>
+            {% if equipment.order_status == 'IP' %}
+                <span>Item on hold</span>
+            {% elif not current_user.is_admin %}
+                <span class="tooltip">Info
+                    <span class="tooltip-text">Please give us a call or come into the store to order this product!</span>
+                </span>
+            {% else %}
+                <form action="{{ url_for('create_order', product_id=equipment.product_id) }}" method="post">
+                    <button type="submit">Create Order</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+<script>
+    function filterItems() {
+        const filterValue = document.getElementById('subtype_filter').value;
+        const items = document.querySelectorAll('.item');
+    
+        items.forEach(item => {
+            const itemSubtype = item.getAttribute('data-subtype');
+            if (filterValue === 'all' || itemSubtype === filterValue) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

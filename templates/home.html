@@ -51,4 +51,28 @@
         {% endif %}
     {% endfor %}
 </div>
+
+<h2>Featured Equipment</h2>
+    <div class="item-list">
+    {% for product in featured_products %}
+        {% if product.item_type.name == 'Equipment' %}
+            <div class="item">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+            <p>{{ product.name }} - ${{ product.price }}</p>
+            {% if product.order_status == 'IP' %}
+                <span>Item on hold</span>
+            {% elif not current_user.is_admin %}
+            <span class="tooltip">Info
+                <span class="tooltip-text">Please give us a call or come into the store to order this product!</span>
+            </span>
+            {% else %}
+                <form action="{{ url_for('create_order', product_id=product.product_id) }}" method="post">
+                    <button type="submit">Create Order</button>
+                </form>
+            {% endif %}
+
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
 {% endblock %}

@@ -17,6 +17,7 @@
                 <li><a href="{{ url_for('home') }}">Home</a></li>
                 <li><a href="{{ url_for('corals') }}">Corals</a></li>
                 <li><a href="{{ url_for('fish') }}">Fish</a></li>
+                <li><a href=" {{ url_for('equipment') }}">Equipment</a></li>
                 {% if current_user.is_authenticated and current_user.is_seller %}
                     <li><a href="{{ url_for('consignment') }}">Consignment</a></li>
                 {% endif %}

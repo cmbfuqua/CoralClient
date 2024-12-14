@@ -120,6 +120,7 @@ def update_user(user_id):
     user.dob = request.form['dob']
     user.in_store_credit = float(request.form['in_store_credit'])
     user.phone_number = request.form['phone_number']
+    user.notes = request.form['notes']
     db.session.commit()
     flash('User profile updated successfully.', 'success')
     return redirect(url_for('edit_user_admin', user_id=user_id))
@@ -234,13 +235,6 @@ def forgot_username():
 ###############################################################
 # Content pages
 ###############################################################
-@app.route('/fish')
-def fish():
-    # Query the database for all fish (or products)
-    fish = ConsignmentProduct.query.filter_by(item_type_id = 2).all()  # Replace with actual query if needed
-    fish_subtypes = ItemSubtype.query.filter_by(item_type_id = 2).order_by(ItemSubtype.name).all()
-    return render_template('fish.html', fish=fish,fish_subtypes = fish_subtypes)
-
 @app.route('/corals')
 def corals():
     # Query the database for all corals (or products)
@@ -248,7 +242,19 @@ def corals():
     coral_subtypes = ItemSubtype.query.filter_by(item_type_id = 1).all()
     return render_template('corals.html', corals=corals,coral_subtypes = coral_subtypes)
 
-from flask import render_template
+@app.route('/fish')
+def fish():
+    # Query the database for all fish (or products)
+    fish = ConsignmentProduct.query.filter_by(item_type_id = 2).all()  # Replace with actual query if needed
+    fish_subtypes = ItemSubtype.query.filter_by(item_type_id = 2).order_by(ItemSubtype.name).all()
+    return render_template('fish.html', fish=fish,fish_subtypes = fish_subtypes)
+
+@app.route('/equipment')
+def equipment():
+    # Query the database for all equipment items (item_type_id = 3)
+    equipment = ConsignmentProduct.query.filter_by(item_type_id=3).all()
+    equipment_subtypes = ItemSubtype.query.filter_by(item_type_id=3).order_by(ItemSubtype.name).all()
+    return render_template('equipment.html', equipment=equipment, equipment_subtypes=equipment_subtypes)
 
 @app.route('/about_us')
 def about_us():

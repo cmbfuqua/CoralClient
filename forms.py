@@ -59,9 +59,6 @@ class ForgotUsernameForm(FlaskForm):
     email = EmailField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Send Username')
 
-from flask_wtf import FlaskForm
-from wtforms import PasswordField, SubmitField
-from wtforms.validators import DataRequired, EqualTo, Length
 
 class ChangeGeneratedPasswordForm(FlaskForm):
     new_password = PasswordField('New Password', validators=[

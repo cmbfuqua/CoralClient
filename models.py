@@ -19,6 +19,7 @@ class User(UserMixin, db.Model):
     in_store_credit = db.Column(db.Float)
     role = db.relationship('Role', backref='users')
     PasswordReset = db.Column(db.Boolean,default = 0)
+    notes = db.Column(db.String(1500),default='')
 
     @property
     def is_admin(self):
