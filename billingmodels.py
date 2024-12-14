@@ -1,7 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from DB import db, app
 from datetime import datetime
-from utility_functions import generate_signed_url
 
 class MaintenanceVisit(db.Model):
     __tablename__ = 'maintenance_visits'

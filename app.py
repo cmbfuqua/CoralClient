@@ -289,7 +289,7 @@ def consignment():
         image = form.image.data
         if image:
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path)
-            image_url = upload_image_to_gcs(upload_path,image)
+            image_url = upload_image_to_gcs(upload_path,image.filename,image)
             
         else:
             image_url = None
@@ -357,7 +357,7 @@ def edit_item(item_id):
             file = form.image.data
             if allowed_file(file.filename):
                 upload_path = os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path)
-                product.image_url = upload_image_to_gcs(upload_path,file)
+                product.image_url = upload_image_to_gcs(upload_path,file.filename,file)
             else:
                 flash('Invalid file type for image.', 'danger')
                 return redirect(url_for('edit_item', item_id=item_id))

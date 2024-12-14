@@ -10,8 +10,9 @@ from google.cloud import storage
 
 import os
 from concurrent.futures import ThreadPoolExecutor
+import requests
 from datetime import datetime, timedelta
-from utility_functions import *
+from utility_functions import upload_image_to_gcs 
 
 from models import User
 from billingmodels import *
@@ -47,13 +48,13 @@ def generate_invoices_all():
             }
         customer_bills[customer.user_id]["bills"].append(bill)
 
-    def process_customer(app, customer_id, data):
+    def process_customer(app, data):
         """Process a single customer: generate PDF and send email."""
         with app.app_context():  # Push the application context
             customer = data["customer"]
             customer_name = f"{customer.first_name} {customer.last_name}"
             file_name = f"{customer_name}_{month}.pdf"
-            pdf_path = create_pdf(data["bills"], customer.maintenance_folder_path, customer_id, file_name)
+            pdf_path = create_pdf(data["bills"], customer.maintenance_folder_path, file_name)
 
             # Send email with the invoice PDF
             send_email(
@@ -72,20 +73,22 @@ def generate_invoices_all():
     success_messages = []
     with ThreadPoolExecutor() as executor:
         # Pass the current app explicitly to each thread
-        futures = [executor.submit(process_customer, current_app._get_current_object(), customer_id, data) for customer_id, data in customer_bills.items()]
+        futures = [executor.submit(process_customer, current_app._get_current_object(), data) for  customer_id, data in customer_bills.items()]
         
         # Collect results as they complete
         for future in futures:
             success_messages.append(future.result())
 
     # Generate summary data
-    now = datetime.now()
-    start_of_month = now.replace(day=1).date()
+    now = datetime.now().date()
+    start_of_month = now.replace(day=1)
+    
+    # Query bills and group them
     bills = Bill.query.all()
-    unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt >= start_of_month]
-    paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt >= start_of_month]
-    previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt < start_of_month]
-    previous_paid = [bill for bill in bills if bill.IsPaid and bill.CreatedAt < start_of_month]
+    unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
+    paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
+    previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() < start_of_month]
+    previous_paid = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() < start_of_month]
     
     # Pass the success messages to the template
     return render_template(
@@ -125,7 +128,7 @@ def generate_invoices_customer(customer_id):
     file_name = f"{customer_name}_{month}.pdf"
     
     # Create the PDF and save the path
-    pdf_path = create_pdf(bills, customer.maintenance_folder_path, customer_id, file_name)
+    pdf_path = create_pdf(bills, customer.maintenance_folder_path, file_name)
 
     # Send the invoice PDF via email
     send_email("Your Monthly Invoice", customer.email, pdf_path)
@@ -144,17 +147,14 @@ def generate_invoices_customer(customer_id):
                            success_message=success_message)
 
 
-def create_pdf(bills, customer_name, customer_id, file_name):
+
+def create_pdf(bills, customer_name, file_name):
     """
     Generate a PDF and upload it to Google Cloud Storage.
-
     Args:
         bills (list): List of bill objects containing CreatedAt, BillID, and TotalAmount.
         customer_name (str): Name of the customer.
-        customer_id (int): ID of the customer.
         file_name (str): Name of the PDF file (e.g., 'invoice.pdf').
-        bucket_name (str): Google Cloud Storage bucket name.
-
     Returns:
         str: The public URL of the uploaded PDF file.
     """
@@ -165,8 +165,11 @@ def create_pdf(bills, customer_name, customer_id, file_name):
     pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
     pdf.setTitle(f"Invoice - {customer_name}")
 
-    # Add logo
-    pdf.drawImage("data/images/logo.png", 50, 750, width=200, height=50)
+    # Add a logo
+    pdf.drawImage(
+        "https://storage.googleapis.com/corals4cheapbucket//data/images/logo.png",
+        50, 750, width=200, height=50
+    )
 
     # Add title
     pdf.setFont("Helvetica-Bold", 16)
@@ -204,27 +207,30 @@ def create_pdf(bills, customer_name, customer_id, file_name):
     pdf_buffer.seek(0)
 
     # Upload the PDF to Google Cloud Storage
-    storage_client = storage.Client()
-    bucket = storage_client.bucket('corals4cheapbucket')
-    destination_path = os.path.join(app.config['UPLOAD_FOLDER'],customer_name,'billing',file_name)
-    blob = bucket.blob(destination_path)
-    blob.upload_from_file(pdf_buffer, content_type='application/pdf')
-    blob.make_public()
+    user_folder = customer_name.replace(" ", "_")
+    pdf_blob = upload_image_to_gcs(user_folder, file_name, pdf_buffer)
 
-        # Construct the public URL to access the file
-    image_url = blob.public_url  # Public URL for the file
-
-    # Return the public URL of the uploaded file
-    return image_url
+    return pdf_blob  # Returns the public URL or GCS path
 
 def send_email(subject, recipient, file_path):
-    with open(file_path, 'rb') as pdf_file:
-        pdf_data = pdf_file.read()
+    """
+    Sends an email with the PDF attachment.
+    Args:
+        subject (str): Email subject.
+        recipient (str): Recipient email address.
+        file_path (str): Public URL or path of the PDF in GCS.
+    """
+    response = requests.get(file_path)
+    if response.status_code == 200:
+        pdf_data = response.content  # Fetch the PDF content
 
-    msg = Message(subject, recipients=[recipient])
-    msg.body = "Please find attached your invoice."
-    msg.attach(os.path.basename(file_path), "application/pdf", pdf_data)
-    mail.send(msg)
+        msg = Message(subject, recipients=[recipient])
+        msg.body = "Please find attached your invoice."
+        msg.attach("invoice.pdf", "application/pdf", pdf_data)
+        mail.send(msg)
+    else:
+        raise Exception(f"Failed to fetch PDF from GCS: {response.status_code}")
+
 
 
 
@@ -311,6 +317,7 @@ def create_bill(visit_id):
     # Calculate total amount and ensure it's displayed correctly
     total_amount = sum(item.TotalPrice for item in bill.line_items)
     bill.TotalAmount = total_amount
+    db.session.commit()
 
     return render_template(
         'billing/create_bill_with_items.html',
@@ -326,13 +333,10 @@ def process_bill_status(bill_id):
 
     if request.form.get('mark_as_paid'):  # Checkbox is checked
         bill.IsPaid = 1
-        flash("Bill has been marked as Paid.", "success")
         db.session.commit()
-        return redirect(url_for('create_maintenance_visit'))  # Redirect to maintenance visit creation
+
+    return redirect(url_for('create_maintenance_visit'))  # Redirect to maintenance visit creation
     
-    # Checkbox not checked, stay on the same page
-    flash("Bill remains Unpaid.", "info")
-    return redirect(url_for('create_bill', visit_id=bill.visitID))  # Redirect back to the bill page
 
 # Mark bill as paid
 @app.route('/bill/<int:bill_id>/mark-paid', methods=['POST'])
@@ -521,13 +525,3 @@ def generate_monthly_bills():
     # This will involve iterating through maintenance visits in the current month and creating summary reports.
     flash("Monthly bills generated and emailed.")
     return redirect(url_for('billing/customer_management'))
-
-@app.route('/send-test-mail')
-def send_mail():
-    try:
-        msg = Message("Test Email", recipients=["Benjamin.Fuqua@gmail.com.com"])
-        msg.body = "This is a test email sent from Flask-Mail!"
-        mail.send(msg)
-        return "Email sent successfully!"
-    except Exception as e:
-        return str(e)

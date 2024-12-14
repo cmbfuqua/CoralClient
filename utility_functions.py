@@ -44,38 +44,33 @@ def send_cancellation_notification(buyer, product, seller,order):
     msg.html = render_template('emails/cancellation_notification.html', seller=seller, product=product, buyer=buyer,order=order)
     mail.send(msg)
 
-def upload_image_to_gcs(user_folder, file):
+def upload_image_to_gcs(user_folder, filename, file):
     """
     Uploads a file to Google Cloud Storage.
-    :param user_folder: The folder path inside the GCS bucket.
-    :param file: The Werkzeug FileStorage object.
-    :return: The GCS path or URL to store in your DB (without the signed URL).
+    Args:
+        user_folder (str): The folder path inside the GCS bucket.
+        filename (str): The name of the file to upload.
+        file (BytesIO): The in-memory file object.
+    Returns:
+        str: The GCS public URL or path to the uploaded file.
     """
-    if file:
-        # Secure the filename to prevent malicious file names
-        filename = secure_filename(file.filename)
+    # Define your GCS bucket name
+    BUCKET_NAME = 'corals4cheapbucket'
 
-        # Define your GCS bucket name
-        BUCKET_NAME = 'corals4cheapbucket'
+    # Initialize the GCS client
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
 
-        # Initialize the GCS client
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(BUCKET_NAME)
+    # Define the blob path in GCS (user folder structure)
+    blob_path = f"{user_folder}/{filename}"
 
-        # Define the blob path in GCS (user folder structure)
-        blob_path = f"{user_folder}/{filename}"
+    # Create a new blob and upload the file to GCS
+    blob = bucket.blob(blob_path)
+    blob.upload_from_file(file, rewind=True)  # Use the file-like object
 
-        # Create a new blob and upload the image file to GCS
-        blob = bucket.blob(blob_path)
-        
-        # Use `file.stream` to get the file-like object from FileStorage
-        blob.upload_from_file(file.stream)
+    # Return the public URL of the uploaded file
+    return blob.public_url
 
-        # Return the GCS path for later use (without generating signed URL)
-        return blob.public_url # Return the path, not the public URL yet
-
-    else:
-        return None
 
 
 
