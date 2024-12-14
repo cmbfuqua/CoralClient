@@ -114,11 +114,10 @@ def edit_user_admin(user_id):
 
 @app.route('/user/<int:user_id>/update', methods=['POST'])
 def update_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = User.query.filter_by(user_id = user_id).first()
     user.first_name = request.form['first_name']
     user.last_name = request.form['last_name']
     user.dob = request.form['dob']
-    user.in_store_credit = float(request.form['in_store_credit'])
     user.phone_number = request.form['phone_number']
     user.notes = request.form['notes']
     db.session.commit()

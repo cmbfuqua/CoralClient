@@ -24,7 +24,7 @@
     <input type="text" name="phone_number" value="{{ user.phone_number }}" required>
 
     <label for="notes">Notes:</label>
-    <input type="text" name="notes" value="{{ user.notes }}">
+    <textarea name="notes" id="notes" rows="5" cols="50">{{ user.notes }}</textarea>>
     
     <button type="submit">Save Changes</button>
 </form>
