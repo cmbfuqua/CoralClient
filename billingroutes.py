@@ -443,10 +443,10 @@ def create_maintenance_visit():
         imagepost_url = None
         if imagepre:
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
-            imagepre_url = upload_image_to_gcs(upload_path,imagepre)
+            imagepre_url = upload_image_to_gcs(upload_path,imagepre.filename,imagepre)
         if imagepost:
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], customer.maintenance_folder_path,'billing','images')
-            imagepost_url = upload_image_to_gcs(upload_path,imagepost)
+            imagepost_url = upload_image_to_gcs(upload_path,imagepost.filename,imagepost)
         
         # Create the visit
         visit = MaintenanceVisit(
