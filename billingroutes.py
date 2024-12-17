@@ -244,7 +244,11 @@ def view_all_bills():
     start_of_month = now.replace(day=1)
     
     # Query bills and group them
-    bills = Bill.query.all()
+    if current_user.is_admin:
+        bills = Bill.query.all()
+    else:
+        bills = Bill.query.join(Bill.visit).filter(MaintenanceVisit.customer_id == current_user.user_id).all()
+            
     unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
     paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
     previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() < start_of_month]
@@ -262,7 +266,7 @@ def view_all_bills():
 @login_required
 def create_bill(visit_id):
     visit = MaintenanceVisit.query.get_or_404(visit_id)
-    if not current_user.is_admin and visit.customer_id != current_user.id:
+    if not current_user.is_admin and visit.customer_id != current_user.user_id:
         flash("Access restricted.")
         return redirect(url_for('home'))
 
@@ -273,16 +277,6 @@ def create_bill(visit_id):
     if not bill:
         bill = Bill(visitID=visit_id, Notes="")
         db.session.add(bill)
-        db.session.commit()
-
-        # Add the default maintenance visit line item
-        default_item = BillLineItem(
-            BillID=bill.BillID,
-            Description="Maintenance Visit",
-            Quantity=1,
-            UnitPrice=55.00
-        )
-        db.session.add(default_item)
         db.session.commit()
         flash("Default line item added for maintenance visit.", "success")
 
@@ -495,7 +489,7 @@ def create_maintenance_visit():
 @app.route('/view_maintenance_logs/<int:customer_id>', methods=['GET'])
 @login_required
 def view_maintenance_logs(customer_id):
-    if not (current_user.is_admin or current_user.id == customer_id):
+    if not (current_user.is_admin or current_user.user_id == customer_id):
         flash("Access restricted.")
         return redirect(url_for('home'))
     
@@ -508,7 +502,7 @@ def view_maintenance_logs(customer_id):
 @login_required
 def maintenance_report(visit_id):
     visit = MaintenanceVisit.query.get_or_404(visit_id)
-    if not (current_user.is_admin or visit.customer_id == current_user.id):
+    if not (current_user.is_admin or visit.customer_id == current_user.user_id):
         flash("Access restricted.")
         return redirect(url_for('home'))
     

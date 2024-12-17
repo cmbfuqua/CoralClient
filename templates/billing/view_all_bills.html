@@ -81,7 +81,7 @@
             <td>{{ "Yes" if bill.IsPaid else "No" }}</td>
             <td>
                 <a href="{{ url_for('maintenance_report', visit_id=bill.visitID) }}">View Visit</a>
-                {% if bill.IsPaid == False %}
+                {% if not bill.IsPaid and current_user.is_admin %}
                 <form action="{{ url_for('mark_bill_paid', bill_id=bill.BillID) }}" method="POST" style="display: inline;">
                     <button class="billsbtn" type="submit">Mark as Paid</button>
                 </form>
