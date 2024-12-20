@@ -10,10 +10,3 @@ handlers:
 
 entrypoint: python app.py
 
-
-env_variables:
-  FLASK_ENV: production
-  SQLALCHEMY_DATABASE_URI: "mysql+pymysql://BenFuqua:2001053597Rex?@/CoralClientSeller?unix_socket=/cloudsql/corals4cheap:us-west1:coralclientsellerdb"
-
-beta_settings:
-  cloud_sql_instances: "corals4cheap:us-west1:coralclientsellerdb"

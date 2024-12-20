@@ -54,7 +54,7 @@ def generate_invoices_all():
             customer = data["customer"]
             customer_name = f"{customer.first_name} {customer.last_name}"
             file_name = f"{customer_name}_{month}.pdf"
-            pdf_path = create_pdf(data["bills"], customer.maintenance_folder_path, file_name)
+            pdf_path = create_pdf(data["bills"], os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path), file_name)
 
             # Send email with the invoice PDF
             send_email(
@@ -128,7 +128,7 @@ def generate_invoices_customer(customer_id):
     file_name = f"{customer_name}_{month}.pdf"
     
     # Create the PDF and save the path
-    pdf_path = create_pdf(bills, customer.maintenance_folder_path, file_name)
+    pdf_path = create_pdf(bills, os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path), file_name)
 
     # Send the invoice PDF via email
     send_email("Your Monthly Invoice", customer.email, pdf_path)
@@ -147,6 +147,10 @@ def generate_invoices_customer(customer_id):
                            success_message=success_message)
 
 
+
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 def create_pdf(bills, customer_name, file_name):
     """
@@ -167,7 +171,7 @@ def create_pdf(bills, customer_name, file_name):
 
     # Add a logo
     pdf.drawImage(
-        "https://storage.googleapis.com/corals4cheapbucket//data/images/logo.png",
+        "https://storage.googleapis.com/corals4cheapbuckets/logo.png",
         50, 750, width=200, height=50
     )
 
@@ -183,20 +187,51 @@ def create_pdf(bills, customer_name, file_name):
     pdf.drawString(250, y_position, "Total Amount")
     y_position -= 20
 
-    # Add bill details
+    # Add bill details with line items
     total_amount = 0
     pdf.setFont("Helvetica", 10)
     for bill in bills:
+        # Add bill details
         pdf.drawString(50, y_position, str(bill.CreatedAt))
         pdf.drawString(150, y_position, str(bill.BillID))
         pdf.drawString(250, y_position, f"${bill.TotalAmount:.2f}")
         total_amount += bill.TotalAmount
         y_position -= 20
+
+        # Add line items for the current bill
+        pdf.setFont("Helvetica-Bold", 9)
+        pdf.drawString(70, y_position, "Line Items:")
+        y_position -= 15
+
+        pdf.setFont("Helvetica", 9)
+        pdf.drawString(70, y_position, "• Description")
+        pdf.drawString(220, y_position, "Quantity")
+        pdf.drawString(300, y_position, "Unit Price")
+        pdf.drawString(400, y_position, "Total Price")
+        y_position -= 15
+
+        for item in bill.line_items:
+            pdf.setFont("Helvetica", 9)
+            pdf.drawString(70, y_position, f"• {item.Description}")
+            pdf.drawString(220, y_position, str(item.Quantity))
+            pdf.drawString(300, y_position, f"${item.UnitPrice:.2f}")
+            pdf.drawString(400, y_position, f"${item.TotalPrice:.2f}")
+            y_position -= 15
+
+            # Handle page overflow
+            if y_position < 50:
+                pdf.showPage()
+                y_position = 750
+
+        y_position -= 10  # Add some space between bills
+        pdf.setFont("Helvetica", 10)
+
+        # Handle page overflow
         if y_position < 50:
             pdf.showPage()
             y_position = 750
 
-    # Add total
+    # Add total summary
     pdf.setFont("Helvetica-Bold", 12)
     pdf.drawString(50, y_position - 20, f"Total Amount: ${total_amount:.2f}")
 
@@ -210,7 +245,8 @@ def create_pdf(bills, customer_name, file_name):
     user_folder = customer_name.replace(" ", "_")
     pdf_blob = upload_image_to_gcs(user_folder, file_name, pdf_buffer)
 
-    return pdf_blob  # Returns the public URL or GCS path
+    return pdf_blob
+
 
 def send_email(subject, recipient, file_path):
     """
@@ -329,6 +365,17 @@ def process_bill_status(bill_id):
         bill.IsPaid = 1
         db.session.commit()
 
+    customer = User.query.get_or_404(bill.visit.customer_id)
+    customer_name = f"{customer.first_name} {customer.last_name}"
+    file_name = f"{customer_name}.pdf"
+
+    bills = Bill.query.filter_by(BillID = bill_id).all()
+    # Create the PDF and save the path
+    pdf_path = create_pdf(bills, os.path.join(app.config['UPLOAD_FOLDER'],current_user.maintenance_folder_path), file_name)
+
+    # Send the invoice PDF via email
+    send_email("Corals4Cheap Visit Invoice", customer.email, pdf_path)
+
     return redirect(url_for('create_maintenance_visit'))  # Redirect to maintenance visit creation
     
 
@@ -364,7 +411,8 @@ def add_maintenance_customer():
     
     return render_template('billing/add_maintenance_customer.html')
 
-import os
+
+
 
 @app.route('/submit_maintenance_customer', methods=['POST'])
 @login_required
@@ -383,12 +431,26 @@ def submit_maintenance_customer():
     customer.is_maintenance = True
     db.session.commit()
 
-    # Create a unique folder for the customer
-    
-    folder_path = os.path.join('data', 'uploads', customer.maintenance_folder_path,'billing')
-
     return jsonify({'success': True, 'message': 'Customer updated and folder created successfully.'})
 
+@app.route('/remove_maintenance_customer', methods=['POST'])
+@login_required
+def remove_maintenance_customer():
+    data = request.get_json()
+    customer_id = data.get('customer_id')
+
+    if not customer_id:
+        return jsonify({'success': False, 'message': 'Invalid customer ID.'}), 400
+
+    customer = User.query.get(customer_id)
+    if not customer:
+        return jsonify({'success': False, 'message': 'Customer not found.'}), 404
+
+    # Update the is_maintenance flag
+    customer.is_maintenance = False
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Customer removed from maintenance successfully.'})
 
 
 @app.route('/search_customers', methods=['GET'])
@@ -502,11 +564,12 @@ def view_maintenance_logs(customer_id):
 @login_required
 def maintenance_report(visit_id):
     visit = MaintenanceVisit.query.get_or_404(visit_id)
+    chemranges = ChemicalRanges.query.all()
     if not (current_user.is_admin or visit.customer_id == current_user.user_id):
         flash("Access restricted.")
         return redirect(url_for('home'))
     
-    return render_template('billing/maintenance_report.html', visit=visit)
+    return render_template('billing/maintenance_report.html', visit=visit, chemranges = chemranges)
 
 @app.route('/generate_monthly_bills', methods=['POST'])
 @login_required

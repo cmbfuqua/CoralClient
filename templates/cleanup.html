@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Admin Cleanup</h2>
+    <p style="color: red; font-weight: bold;">
+        WARNING: Clicking the button below will delete any and all orders which have a status of completed or deleted as well as their associated pictures.
+    </p>
+
+    <button type="button" class="btn btn-danger" onclick="showConfirmationBox()">DELETE ALL COMPLETED AND DELETED ORDERS</button>
+    
+    <form action="{{ url_for('cleanup_orders') }}" method="POST" id="cleanupForm">
+        <div id="confirmation-box" style="display: none; margin-top: 20px;">
+            <label for="confirmation_text">Please type "I Know What I am doing" to confirm:</label>
+            <input type="text" name="confirmation_text" required>
+            <button type="submit" class="btn btn-warning">Submit</button>
+        </div>
+    </form>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Cleanup Successful</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="successMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showConfirmationBox() {
+            document.getElementById('confirmation-box').style.display = 'block';
+        }
+
+        // Handle form submission using AJAX
+        document.getElementById('cleanupForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            var formData = new FormData(this);
+
+            fetch("{{ url_for('cleanup_orders') }}", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success modal and display the message
+                    document.getElementById('successMessage').textContent = data.message;
+                    $('#successModal').modal('show');
+                } else {
+                    alert(data.message); // Or handle failure however you'd like
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            });
+        });
+    </script>
+
+{% endblock %}

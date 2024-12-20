@@ -50,3 +50,12 @@ class BillLineItem(db.Model):
     @property
     def TotalPrice(self):
         return self.Quantity * self.UnitPrice
+    
+class ChemicalRanges(db.Model):
+    __tablename__ = 'Chemical_Ranges'
+
+    ChemID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    ChemName = db.Column(db.String(100), nullable=False)
+    MinValues = db.Column(db.Float, nullable=False)
+    MaxValues = db.Column(db.Float, nullable=False)
+    Optimal = db.Column(db.Float, nullable=False)

@@ -40,6 +40,7 @@
                             <li><a href="{{ url_for('manage_users') }}">Manage Users</a></li>
                             <li><a href="{{ url_for('manage_products') }}">Manage Products</a></li>
                             <li><a href="{{ url_for('all_orders') }}">View Orders</a></li>
+                            <li><a href="{{ url_for('cleanup_page') }}">Cleanup Orders</a></li>
                             <!-- Add more admin tools links as needed -->
                         </ul>
                     </li>
@@ -65,7 +66,7 @@
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Company Logo">
         </div>
         <div class="footer-info">
-            <p><strong>Hours of Operation:</strong><br>Monday - Friday: 9 AM - 5 PM<br>Saturday: 10 AM - 4 PM<br>Sunday: Closed</p>
+            <p><strong>Hours of Operation:</strong><br>Monday - Friday: 11 AM - 7 PM<br>Saturday: 10 AM - 5 PM<br>Sunday: Closed</p>
         </div>
         <ul class="footer-links">
             <li><a href="{{ url_for('about_us') }}">About Us</a></li>

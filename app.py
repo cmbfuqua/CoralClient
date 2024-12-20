@@ -7,11 +7,13 @@ from werkzeug.utils import secure_filename
 from billingroutes import *
 from waitress import serve
 from google.cloud import storage
+from sqlalchemy import or_
 
 from models import *
 from forms import *
 from DB import db, app
 from utility_functions import *
+from functools import wraps
 
 import os
 from datetime import datetime
@@ -50,7 +52,14 @@ def load_user(user_id):
 # Home route
 @app.route('/')
 def home():
-    featured_products = ConsignmentProduct.query.filter_by(featured=True).all()
+    featured_products = (
+    ConsignmentProduct.query
+    .filter_by(featured=True)
+    .outerjoin(Order, Order.product_id == ConsignmentProduct.product_id)
+    .filter(or_(Order.order_status != 'C', Order.order_status.is_(None)))
+    .options(joinedload(ConsignmentProduct.orders))  # Optional: To load related orders efficiently
+    .all()
+        )
     orders = Order.query.all()
 
     # Handle empty lists if no products or orders are found
@@ -237,21 +246,42 @@ def forgot_username():
 @app.route('/corals')
 def corals():
     # Query the database for all corals (or products)
-    corals = ConsignmentProduct.query.filter_by(item_type_id = 1).all()  # Replace with actual query
+    corals = (
+    ConsignmentProduct.query
+    .filter(ConsignmentProduct.item_type_id == 1)
+    .outerjoin(Order, Order.product_id == ConsignmentProduct.product_id)
+    .filter(or_(Order.order_status != 'C', Order.order_status.is_(None)))
+    .options(joinedload(ConsignmentProduct.orders))  # Optional: To load related orders efficiently
+    .all()
+        ) # Replace with actual query
     coral_subtypes = ItemSubtype.query.filter_by(item_type_id = 1).all()
     return render_template('corals.html', corals=corals,coral_subtypes = coral_subtypes)
 
 @app.route('/fish')
 def fish():
     # Query the database for all fish (or products)
-    fish = ConsignmentProduct.query.filter_by(item_type_id = 2).all()  # Replace with actual query if needed
+    fish = (
+    ConsignmentProduct.query
+    .filter(ConsignmentProduct.item_type_id == 2)
+    .outerjoin(Order, Order.product_id == ConsignmentProduct.product_id)
+    .filter(or_(Order.order_status != 'C', Order.order_status.is_(None)))
+    .options(joinedload(ConsignmentProduct.orders))  # Optional: To load related orders efficiently
+    .all()
+        ) # Replace with actual query if needed
     fish_subtypes = ItemSubtype.query.filter_by(item_type_id = 2).order_by(ItemSubtype.name).all()
     return render_template('fish.html', fish=fish,fish_subtypes = fish_subtypes)
 
 @app.route('/equipment')
 def equipment():
     # Query the database for all equipment items (item_type_id = 3)
-    equipment = ConsignmentProduct.query.filter_by(item_type_id=3).all()
+    equipment = (
+    ConsignmentProduct.query
+    .filter(ConsignmentProduct.item_type_id == 3)
+    .outerjoin(Order, Order.product_id == ConsignmentProduct.product_id)
+    .filter(or_(Order.order_status != 'C', Order.order_status.is_(None)))
+    .options(joinedload(ConsignmentProduct.orders))  # Optional: To load related orders efficiently
+    .all()
+        )
     equipment_subtypes = ItemSubtype.query.filter_by(item_type_id=3).order_by(ItemSubtype.name).all()
     return render_template('equipment.html', equipment=equipment, equipment_subtypes=equipment_subtypes)
 
@@ -317,8 +347,7 @@ def consignment():
         flash('Product added successfully!', 'success')
         return redirect(url_for('consignment'))
 
-    user_products = ConsignmentProduct.query.filter((ConsignmentProduct.seller_id == current_user.user_id) &
-                                                    ((ConsignmentProduct.order_status == 'IP') | (ConsignmentProduct.order_status =='None'))).all()
+    user_products = ConsignmentProduct.query.filter_by(seller_id = current_user.user_id).filter(ConsignmentProduct.order_status != 'C').all()
     return render_template('consignment.html', form=form, user_products=user_products)
 
 @app.route('/subcategories/<int:item_type_id>')
@@ -470,9 +499,57 @@ def manage_users():
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('home'))
 
-    users = User.query.all()
+    users = User.query.order_by(User.first_name, User.last_name).all()
+
     roles = Role.query.all()  # Get all roles (e.g., user, seller, admin)
     return render_template('manage_users.html', users=users, roles=roles)
+
+@app.route('/admin/cleanup', methods=['GET'])
+@login_required
+def cleanup_page():
+    return render_template('cleanup.html')
+
+from flask import jsonify
+
+@app.route('/admin/cleanup_orders', methods=['POST'])
+@login_required
+def cleanup_orders():
+    confirmation_text = request.form.get('confirmation_text')
+
+    # Check if confirmation text matches
+    if confirmation_text != "I Know What I am doing":
+        return jsonify({"success": False, "message": "Incorrect confirmation text. No orders were deleted."})
+
+    # Fetch all orders with status 'C' or 'X'
+    if current_user.is_admin:
+        orders_to_delete = Order.query.filter(Order.order_status.in_(['C', 'X'])).all()
+        
+        deleted_count = 0
+        if orders_to_delete:
+            for order in orders_to_delete:
+                # Get the associated product
+                product = order.product
+                
+                # If the product has an image URL, delete the image from Google Cloud Storage
+                if product and product.image_url:
+                    delete_image_from_gcs(product.image_url)
+
+                # Delete the product itself
+                if product:
+                    db.session.delete(product)
+                
+                # Delete the order
+                db.session.delete(order)
+                deleted_count += 1
+        
+            db.session.commit()
+            return jsonify({"success": True, "message": f"Database cleanup completed. {deleted_count} orders and their images deleted."})
+        else:
+            return jsonify({"success": False, "message": "No completed or deleted orders were found to delete."})
+        
+    return jsonify({"success": False, "message": "Unauthorized."})
+
+
 
 ###################################################
 # Creating Orders
@@ -571,6 +648,7 @@ def order_status(order_id):
         elif 'set_pickup' in request.form:
             order.product_pickup = datetime.now()
             order.order_status = 'C'  # Completed
+            product.order_status = 'C'
             db.session.commit()
 
             # Send email to buyer and seller

@@ -16,7 +16,12 @@
                 <td>{{ customer.email }}</td>
                 <td>
                     <a href="{{ url_for('view_maintenance_logs', customer_id=customer.user_id) }}">View Logs</a>
+                    <button class="btn btn-danger" onclick="removeMaintenanceCustomer({{ customer.user_id }})">
+                        Remove Maintenance
+                    </button>
+                    
                 </td>
+                
             </tr>
             {% endfor %}
         </tbody>
@@ -24,4 +29,34 @@
     <form action="{{ url_for('add_maintenance_customer') }}">
         <button type="submit">Add Maintenance Customer</button>
     </form>
+
+    <script>
+        function removeMaintenanceCustomer(customerId) {
+            if (!confirm('Are you sure you want to remove this customer from maintenance?')) {
+                return;
+            }
+    
+            fetch('{{ url_for("remove_maintenance_customer") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ customer_id: customerId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message); // Show a success message
+                    location.reload();  // Optionally reload the page to update the table
+                } else {
+                    alert('Error: ' + data.message); // Show an error message
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            });
+        }
+    </script>
+    
 {% endblock %}

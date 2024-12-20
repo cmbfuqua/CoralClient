@@ -1,10 +1,9 @@
 from flask import render_template
 from flask_mail import Message
-from werkzeug.utils import secure_filename
 from billingroutes import *
-from waitress import serve
 from google.cloud import storage
 
+from functools import wraps
 
 from DB import app
 
@@ -55,7 +54,7 @@ def upload_image_to_gcs(user_folder, filename, file):
         str: The GCS public URL or path to the uploaded file.
     """
     # Define your GCS bucket name
-    BUCKET_NAME = 'corals4cheapbucket'
+    BUCKET_NAME = 'corals4cheapbuckets'
 
     # Initialize the GCS client
     storage_client = storage.Client()
@@ -71,6 +70,49 @@ def upload_image_to_gcs(user_folder, filename, file):
     # Return the public URL of the uploaded file
     return blob.public_url
 
+def admin_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash("You must be logged in to access this page.", "warning")
+            return redirect(url_for('login'))
+        if not current_user.is_admin:  # Directly check `is_admin` attribute
+            flash("You do not have permission to access this page.", "danger")
+            return redirect(url_for('index'))
+        return func(*args, **kwargs)
+    return decorated_view
 
+def delete_image_from_gcs(image_url):
+    """
+    Deletes the image from Google Cloud Storage given the image URL.
+    
+    Args:
+        image_url (str): The URL of the image to be deleted.
+    
+    Returns:
+        None
+    """
+    try:
+        # Extract the file path from the image URL (assuming the image URL is a direct link)
+        # Example: 'https://storage.googleapis.com/your-bucket-name/path/to/image.jpg'
+        # Define the bucket name
+        bucket_name = "corals4cheapbuckets"  # Replace with your actual bucket name
+        file_path = image_url.split(f"https://storage.googleapis.com/{bucket_name}/")[-1]
+
+        # Initialize the Google Cloud Storage client
+        storage_client = storage.Client()
+
+
+        # Get the bucket object
+        bucket = storage_client.bucket(bucket_name)
+
+        blob = bucket.blob(file_path)
+        if blob.exists():
+            blob.delete()
+
+        print(f"Image {file_path} successfully deleted from Google Cloud Storage.")
+
+    except Exception as e:
+        print(f"Error deleting image from Google Cloud Storage: {e}")
 
 
