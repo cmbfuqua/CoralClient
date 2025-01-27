@@ -7,14 +7,51 @@
     <h3>Visit Details</h3>
     <p><strong>Customer ID:</strong> {{ visit.customer_id }}</p>
     <p><strong>Date of Visit:</strong> {{ visit.date_of_visit.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-    <p><strong>Ammonia:</strong> {{ visit.ammonia }}</p>
-    <p><strong>Nitrite:</strong> {{ visit.nitrite }}</p>
-    <p><strong>Nitrate:</strong> {{ visit.nitrate }}</p>
-    <p><strong>pH:</strong> {{ visit.ph }}</p>
-    <p><strong>Phosphates:</strong> {{ visit.phosphates }}</p>
-    <p><strong>Calcium:</strong> {{ visit.calcium }}</p>
-    <p><strong>Magnesium:</strong> {{ visit.magnesium }}</p>
-    <p><strong>Alkalinity:</strong> {{ visit.alkalinity }}</p>
+    
+    {% for chem_name, chem_value in [
+        ('Ammonia', visit.ammonia),
+        ('Nitrite', visit.nitrite),
+        ('Nitrate', visit.nitrate),
+        ('pH', visit.ph),
+        ('Phosphates', visit.phosphates),
+        ('Calcium', visit.calcium),
+        ('Magnesium', visit.magnesium),
+        ('Alkalinity', visit.alkalinity)
+    ] %}
+        {% for chem in chemranges %}
+        <p></p>
+            {% if chem.ChemName == chem_name %}
+                {% if chem_value == chem.Optimal %}
+                    <p><strong>{{ chem_name }}:</strong> 
+                        <span style="color: green;">{{ chem_value }} (Optimal)</span>
+                    </p>
+                {% elif chem_value < chem.MinValues %}
+                    <p><strong>{{ chem_name }}:</strong> 
+                        <span style="color: red;">{{ chem_value }} (Below safe range)</span>
+                    </p>
+                {% elif chem_value > chem.MaxValues %}
+                    <p><strong>{{ chem_name }}:</strong> 
+                        <span style="color: red;">{{ chem_value }} (Above safe range)</span>
+                    </p>
+                {% else %}
+                    <p><strong>{{ chem_name }}:</strong> 
+                        <span style="color: black;">{{ chem_value }}</span>
+                    </p>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+    
+    <!-- Legend Section -->
+    <div style="margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9;">
+        <h4>Legend</h4>
+        <p><span style="color: green; font-weight: bold;">Green:</span> Optimal value for the parameter.</p>
+        <p><span style="color: red; font-weight: bold;">Red:</span> Value is outside the safe range. 
+            - "Below safe range" means it's too low. 
+            - "Above safe range" means it's too high.</p>
+        <p><span style="color: black; font-weight: bold;">Black:</span> Value is within the safe range but not optimal.</p>
+    </div>
+    
 
     {% if visit.notes %}
         <p><strong>Notes:</strong> {{ visit.notes }}</p>

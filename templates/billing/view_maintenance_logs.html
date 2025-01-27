@@ -20,7 +20,7 @@
             <option value=12>December</option>
         </select>
     
-        <button type="submit">Generate Invoice for This Customer</button>
+        <button type="submit">Generate Invoice for {{ customer.first_name }}</button>
     </form>
     <p>NOTE: Bills are only generated from the previous rolling year</p>
     <!-- Display Success Modal if success_message exists -->

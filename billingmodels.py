@@ -52,7 +52,7 @@ class BillLineItem(db.Model):
         return self.Quantity * self.UnitPrice
     
 class ChemicalRanges(db.Model):
-    __tablename__ = 'Chemical_Ranges'
+    __tablename__ = 'ChemicalRanges'
 
     ChemID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     ChemName = db.Column(db.String(100), nullable=False)

@@ -473,6 +473,19 @@ def search_customers():
     } for customer in customers]
     return jsonify(results)
 
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    # Find the user by ID
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Delete the user from the database
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('manage_users'))
+
+
 
 ###############################################
 # --- Create Maintenance Visit ---
@@ -531,14 +544,7 @@ def create_maintenance_visit():
         db.session.add(bill)
         db.session.commit()
         # Handle form submission to add more line items
-        line_item = BillLineItem(
-            BillID=bill.BillID,
-            Description='Maintenance',
-            Quantity=1,
-            UnitPrice=55
-        )
-        db.session.add(line_item)
-        db.session.commit()
+        
 
         flash("Maintenance visit created and bill processed.")
         return redirect(url_for('create_bill', visit_id=visit.visit_id))
