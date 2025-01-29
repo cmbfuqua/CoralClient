@@ -81,6 +81,8 @@
     {% if visit.bill %}
         <hr>
         <h3>Billing Information</h3>
+        <p><strong>Sub Total:</strong> {{ visit.bill.SubTotal }}</p>
+        <p><strong>Tax:</strong> {{ visit.bill.Tax }}</p>
         <p><strong>Total Amount:</strong> {{ visit.bill.TotalAmount }}</p>
         <p><strong>Paid:</strong> {{ "Yes" if visit.bill.IsPaid else "No" }}</p>
         <p><strong>Created At:</strong> {{ visit.bill.CreatedAt.strftime('%Y-%m-%d %H:%M:%S') }}</p>

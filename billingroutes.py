@@ -331,8 +331,11 @@ def create_bill(visit_id):
         flash("Line item added successfully.", "success")
 
         # Update TotalAmount
-        total_amount = sum(item.TotalPrice for item in bill.line_items)
-        bill.TotalAmount = total_amount
+        tax = sum(float(item.TotalPrice) for item in bill.line_items if 'lean' not in str(item.Description).lower()) * .06
+        subtotal = sum(float(item.TotalPrice) for item in bill.line_items)
+        bill.TotalAmount = tax+float(subtotal)
+        bill.Tax = tax
+        bill.SubTotal = subtotal
 
         # Check if the bill is marked as paid
         if request.form.get('mark_as_paid'):
@@ -345,8 +348,12 @@ def create_bill(visit_id):
         db.session.commit()
 
     # Calculate total amount and ensure it's displayed correctly
-    total_amount = sum(item.TotalPrice for item in bill.line_items)
-    bill.TotalAmount = total_amount
+    tax = sum(float(item.TotalPrice) for item in bill.line_items if 'lean' not in str(item.Description).lower()) * .06
+    subtotal = sum(float(item.TotalPrice) for item in bill.line_items)
+    bill.TotalAmount = tax+float(subtotal)
+    bill.Tax = tax
+    bill.SubTotal = subtotal
+    
     db.session.commit()
 
     return render_template(

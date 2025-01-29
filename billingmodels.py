@@ -29,6 +29,8 @@ class Bill(db.Model):
     BillID = db.Column(db.Integer, primary_key=True)
     visitID = db.Column(db.Integer, db.ForeignKey('maintenance_visits.visit_id'), nullable=False)
     TotalAmount = db.Column(db.Float, nullable=False, default=0.00)
+    SubTotal = db.Column(db.Float,nullable=False)
+    Tax = db.Column(db.Float,nullable=False)
     IsPaid = db.Column(db.Boolean, default=False)
     CreatedAt = db.Column(db.Date, default=datetime.now().date())
     PaidAt = db.Column(db.Date, nullable=True)
