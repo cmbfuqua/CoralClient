@@ -82,6 +82,16 @@ def register():
         #if form.hidden_trap.data:
              # Log or silently discard bot submission
             #return redirect(url_for('index'))
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
+            flash("An account with this email already exists.", "danger")
+            return render_template("register.html", form=form)
+        
+        existing_username = User.query.filter_by(username=form.username.data).first()
+        if existing_username:
+            flash("This username is already taken.", "danger")
+            return render_template("register.html", form=form)
+
 
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user_role = Role.query.filter_by(name='user').first()
