@@ -1,4 +1,4 @@
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField, SubmitField, SelectField, DecimalField, TextAreaField, DateField, EmailField
 from flask_wtf.file import FileField,FileAllowed
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Regexp
@@ -15,6 +15,9 @@ class RegistrationForm(FlaskForm):
     ])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    recaptcha = RecaptchaField()
+    hidden_trap = StringField('', validators=[Length(max=0)])
+
     submit = SubmitField('Register')
 
 class EditUserForm(FlaskForm):

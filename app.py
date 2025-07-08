@@ -79,6 +79,10 @@ def register():
         return redirect(url_for('home'))
     form = RegistrationForm()
     if form.validate_on_submit():
+        #if form.hidden_trap.data:
+             # Log or silently discard bot submission
+            #return redirect(url_for('index'))
+
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user_role = Role.query.filter_by(name='user').first()
         user = User(

@@ -102,6 +102,10 @@
     </div>
 
     <div>
+        {{ form.hidden_tag() }}
+        {{ form.recaptcha.label }}
+        {{ form.recaptcha() }}
+
         {{ form.submit() }}
     </div>
 </form>

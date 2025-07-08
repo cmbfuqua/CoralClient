@@ -28,5 +28,9 @@ class Config:
     MAIL_PASSWORD = 'mabg kcyn vhnq joiq'
     MAIL_DEFAULT_SENDER = 'Corals4CheapAutomated@gmail.com'
 
+    RECAPTCHA_PUBLIC_KEY = '6LeQfHsrAAAAAFrl8hRQivke-548whic_MWzy71O'
+    RECAPTCHA_PRIVATE_KEY = '6LeQfHsrAAAAABjvrDD3f3lyRzRh6oIB4nJYNt1u'
+
+
 
 
