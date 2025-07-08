@@ -55,10 +55,7 @@ def home():
     featured_products = (
     ConsignmentProduct.query
     .filter_by(featured=True)
-    .outerjoin(Order, Order.product_id == ConsignmentProduct.product_id)
-    .filter(or_(Order.order_status != 'C', Order.order_status.is_(None)))
-    .options(joinedload(ConsignmentProduct.orders))  # Optional: To load related orders efficiently
-    .all()
+    .filter(ConsignmentProduct.order_status != 'C')
         )
     orders = Order.query.all()
 
@@ -277,9 +274,7 @@ def equipment():
     equipment = (
     ConsignmentProduct.query
     .filter(ConsignmentProduct.item_type_id == 3)
-    .outerjoin(Order, Order.product_id == ConsignmentProduct.product_id)
-    .filter(or_(Order.order_status != 'C', Order.order_status.is_(None)))
-    .options(joinedload(ConsignmentProduct.orders))  # Optional: To load related orders efficiently
+    .filter(ConsignmentProduct.order_status != 'C')  # Optional: To load related orders efficiently
     .all()
         )
     equipment_subtypes = ItemSubtype.query.filter_by(item_type_id=3).order_by(ItemSubtype.name).all()

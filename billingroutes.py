@@ -492,7 +492,34 @@ def delete_user(user_id):
     db.session.commit()
     return redirect(url_for('manage_users'))
 
+@app.route('/delete_bill/<int:billID>',methods = ['POST'])
+def delete_bill(billID):
+    bill = Bill.query.get(billID)
+    if not bill:
+        return jsonify({'message':'no bill found'})
 
+    
+    db.session.delete(bill)
+    db.session.delete(bill.visit)
+
+    db.session.commit()
+    # Query bills and group them
+    now = datetime.now().date()
+    start_of_month = now.replace(day=1)
+    bills = Bill.query.all()
+    unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
+    paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
+    previous_unpaid = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() < start_of_month]
+    previous_paid = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() < start_of_month]
+    
+    # Pass the success messages to the template
+    return render_template(
+        'billing/view_all_bills.html', 
+        unpaid_this_month=unpaid_this_month,
+        paid_this_month=paid_this_month,
+        previous_unpaid=previous_unpaid,
+        previous_paid=previous_paid
+    )
 
 ###############################################
 # --- Create Maintenance Visit ---
