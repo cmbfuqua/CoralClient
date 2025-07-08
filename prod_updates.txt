@@ -1,5 +1,5 @@
-to push the database changes to prod, first run sync_to_railway.bat
+to make changes to prod
 
-then run 'railway connect mysql'
+1: open the google sdk cli, then cd into C:\Users\benja\OneDrive\Documents\my_app\CoralClient
 
-then 'source ./SQLStuff/Backup.sql'
+2: run gcloud app deploys
