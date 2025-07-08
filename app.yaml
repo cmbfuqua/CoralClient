@@ -1,4 +1,4 @@
-runtime: python39  # or python38 if you're using Python 3.8
+runtime: python310  # or python38 if you're using Python 3.8
 
 handlers:
 - url: /static
