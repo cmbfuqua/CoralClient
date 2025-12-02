@@ -281,9 +281,9 @@ def view_all_bills():
     
     # Query bills and group them
     if current_user.is_admin:
-        bills = Bill.query.all()
+        bills = Bill.query.order_by(Bill.CreatedAt.desc()).all()
     else:
-        bills = Bill.query.join(Bill.visit).filter(MaintenanceVisit.customer_id == current_user.user_id).all()
+        bills = Bill.query.join(Bill.visit).filter(MaintenanceVisit.customer_id == current_user.user_id).order_by(Bill.CreatedAt.desc()).all()
             
     unpaid_this_month = [bill for bill in bills if not bill.IsPaid and bill.CreatedAt.date() >= start_of_month]
     paid_this_month = [bill for bill in bills if bill.IsPaid and bill.CreatedAt.date() >= start_of_month]

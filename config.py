@@ -25,7 +25,7 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
     MAIL_USERNAME = 'Corals4CheapAutomated@gmail.com'
-    MAIL_PASSWORD = 'mabg kcyn vhnq joiq'
+    MAIL_PASSWORD = 'voci bcci dwou wyts'
     MAIL_DEFAULT_SENDER = 'Corals4CheapAutomated@gmail.com'
 
     RECAPTCHA_PUBLIC_KEY = '6LeQfHsrAAAAAFrl8hRQivke-548whic_MWzy71O'

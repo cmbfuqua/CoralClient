@@ -1,5 +1,9 @@
 to make changes to prod
 
-1: open the google sdk cli, then cd into C:\Users\benja\OneDrive\Documents\my_app\CoralClient
+1: open the google sdk cli, then cd your repo location
 
-2: run gcloud app deploys
+2: run gcloud app deploy
+
+To view the logs
+
+gcloud app logs tail -s default

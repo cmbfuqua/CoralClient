@@ -82,29 +82,44 @@
             <th>Customer</th>
             <th>Total</th>
             <th>Paid</th>
-            <th>Actions</th>
+            <th style="width:auto">Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for bill in bills %}
         <tr>
-            <td><form action="{{ url_for('delete_bill', billID=bill.BillID) }}" method="post" onsubmit="return confirm('Are you sure you want to delete the bill for {{ bill.visit.customer.first_name }} on {{bill.CreatedAt }}?');">
-                <button type="submit">Delete</button>
-            </form></td>
+            <td>
+                <form action="{{ url_for('delete_bill', billID=bill.BillID) }}"
+                      method="post"
+                      onsubmit="return confirm('Are you sure you want to delete the bill for {{ bill.visit.customer.first_name }} on {{ bill.CreatedAt }}?');">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+
             <td>{{ bill.CreatedAt }}</td>
             <td>{{ bill.visit.customer.first_name }} {{ bill.visit.customer.last_name }}</td>
             <td>{{ bill.TotalAmount }}</td>
             <td>{{ "Yes" if bill.IsPaid else "No" }}</td>
+
             <td>
-                <a href="{{ url_for('maintenance_report', visit_id=bill.visitID) }}">View Visit</a>
-                {% if not bill.IsPaid and current_user.is_admin %}
-                <form action="{{ url_for('mark_bill_paid', bill_id=bill.BillID) }}" method="POST" style="display: inline;">
-                    <button class="billsbtn" type="submit">Mark as Paid</button>
-                </form>
-                {% endif %}
+                <!-- Flexbox wrapper for side-by-side buttons -->
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <a href="{{ url_for('maintenance_report', visit_id=bill.visitID) }}"
+                       class="action-btn">
+                        View Visit
+                    </a>
+
+                    {% if not bill.IsPaid and current_user.is_admin %}
+                    <form action="{{ url_for('mark_bill_paid', bill_id=bill.BillID) }}"
+                          method="POST" style="margin:0;">
+                        <button class="billsbtn" type="submit">Mark as Paid</button>
+                    </form>
+                    {% endif %}
+                </div>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 {% endmacro %}
+
