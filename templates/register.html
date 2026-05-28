@@ -1,115 +1,87 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Register</h2>
-<form action="{{ url_for('register') }}" method="post">
-    {{ form.hidden_tag() }}
+<div class="card" style="max-width: 500px; margin: auto;">
+    <div class="card-body">
+        <h2 class="card-title text-center">Register</h2>
+        <form action="{{ url_for('register') }}" method="post">
+            {{ form.hidden_tag() }}
 
-    <div>
-        <label for="username">Username:</label>
-        {{ form.username(class="form-control", id="username") }}
-        {% if form.username.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.username.label }}
+                {{ form.username(class="form-control", id="username") }}
                 {% for error in form.username.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            </div>
 
-    <div>
-        <label for="email">Email:</label>
-        {{ form.email(class="form-control", id="email") }}
-        {% if form.email.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-control", id="email") }}
                 {% for error in form.email.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            </div>
 
-    <div>
-        <label for="first_name">First Name:</label>
-        {{ form.first_name(class="form-control", id="first_name") }}
-        {% if form.first_name.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.first_name.label }}
+                {{ form.first_name(class="form-control", id="first_name") }}
                 {% for error in form.first_name.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            </div>
 
-    <div>
-        <label for="last_name">Last Name:</label>
-        {{ form.last_name(class="form-control", id="last_name") }}
-        {% if form.last_name.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.last_name.label }}
+                {{ form.last_name(class="form-control", id="last_name") }}
                 {% for error in form.last_name.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            </div>
 
-    <div>
-        <label for="dob">Date of Birth:</label>
-        {{ form.dob(class="form-control", id="dob") }}
-        {% if form.dob.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.dob.label }}
+                {{ form.dob(class="form-control", id="dob") }}
                 {% for error in form.dob.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            </div>
 
-    <div>
-        <label for="phone_number">Phone Number:</label>
-        {{ form.phone_number(class="form-control", id="phone_number") }}
-        {% if form.phone_number.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.phone_number.label }}
+                {{ form.phone_number(class="form-control", id="phone_number") }}
                 {% for error in form.phone_number.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            </div>
 
-    <div>
-        <label for="password">Password:</label>
-        {{ form.password(class="form-control", id="password") }}
-        {% if form.password.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-control", id="password") }}
                 {% for error in form.password.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            </div>
 
-    <div>
-        <label for="confirm_password">Confirm Password:</label>
-        {{ form.confirm_password(class="form-control", id="confirm_password") }}
-        {% if form.confirm_password.errors %}
-            <ul>
+            <div class="form-group">
+                {{ form.confirm_password.label }}
+                {{ form.confirm_password(class="form-control", id="confirm_password") }}
                 {% for error in form.confirm_password.errors %}
-                    <li class="text-danger" style="color: red;">{{ error }}</li>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            </ul>
-        {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.recaptcha.label }}
+                {{ form.recaptcha() }}
+                {% for error in form.recaptcha.errors %}
+                    <span class="text-danger">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary btn-block") }}
+        </form>
+        <p class="mt-3 text-center">Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
     </div>
-
-    <div>
-        {{ form.hidden_tag() }}
-        {{ form.recaptcha.label }}
-        {{ form.recaptcha() }}
-
-        {{ form.submit() }}
-    </div>
-</form>
-
-<p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
-
+</div>
 {% endblock %}

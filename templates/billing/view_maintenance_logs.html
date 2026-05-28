@@ -60,7 +60,7 @@
                 <td>{{ visit.recommendations }}</td>
                 <td>{{ "Yes" if visit.bill.IsPaid else "No" }}</td>
                 <td>
-                    <a href="{{ url_for('maintenance_report', visit_id=visit.visit_id) }}">View Full Report</a>
+                    <a href="{{ url_for('billing.maintenance_report', visit_id=visit.visit_id) }}">View Full Report</a>
                 </td>
             </tr>
             {% endfor %}

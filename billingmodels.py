@@ -18,11 +18,14 @@ class MaintenanceVisit(db.Model):
     notes = db.Column(db.Text)
     recommendations = db.Column(db.Text)
     after_picture = db.Column(db.String(255))
-    date_of_visit = db.Column(db.DateTime, default=datetime.now())
+    date_of_visit = db.Column(db.DateTime, default=datetime.now)
 
     # Correct the relationship and use `back_populates`
     bill = db.relationship('Bill', back_populates='visit', uselist=False)
     customer = db.relationship('User', backref='maintenance_visits', uselist=False)
+    
+    def __repr__(self):
+        return f"<MaintenanceVisit {self.visit_id} for Customer {self.customer_id}>"
 
 class Bill(db.Model):
     __tablename__ = 'Bill'
@@ -32,7 +35,7 @@ class Bill(db.Model):
     SubTotal = db.Column(db.Float,nullable=False)
     Tax = db.Column(db.Float,nullable=False)
     IsPaid = db.Column(db.Boolean, default=False)
-    CreatedAt = db.Column(db.Date, default=datetime.now().date())
+    CreatedAt = db.Column(db.Date, default=lambda: datetime.now().date())
     PaidAt = db.Column(db.Date, nullable=True)
     Notes = db.Column(db.Text, nullable=True)
 
@@ -40,6 +43,9 @@ class Bill(db.Model):
 
     # Correct the relationship and use `back_populates`
     visit = db.relationship('MaintenanceVisit', back_populates='bill')
+    
+    def __repr__(self):
+        return f"<Bill {self.BillID} - Paid: {self.IsPaid}>"
 
 class BillLineItem(db.Model):
     __tablename__ = 'BillLineItem'
@@ -52,6 +58,9 @@ class BillLineItem(db.Model):
     @property
     def TotalPrice(self):
         return self.Quantity * self.UnitPrice
+        
+    def __repr__(self):
+        return f"<BillLineItem {self.Description} (x{self.Quantity})>"
     
 class ChemicalRanges(db.Model):
     __tablename__ = 'ChemicalRanges'

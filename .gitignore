@@ -1,3 +1,7 @@
 
 todo
 prod_updates.txt
+__pycache__/
+*.py[cod]
+*$py.class
+.env

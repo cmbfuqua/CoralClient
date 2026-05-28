@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from DB import db,app
+from DB import db, app
 
 # User model
 class User(UserMixin, db.Model):
@@ -31,7 +31,7 @@ class User(UserMixin, db.Model):
     
     @property
     def maintenance_folder_path(self):
-        return str(self.first_name).strip() + str(self.last_name).strip() + str(self.user_id)
+        return (str(self.first_name).strip() + str(self.last_name).strip() + str(self.user_id)).replace(" ", "")
     
     def get_id(self):
         return str(self.user_id)
@@ -41,13 +41,18 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+        
+    def __repr__(self):
+        return f"<User {self.username} (ID: {self.user_id})>"
 
 # Role model
 class Role(db.Model):
     __tablename__ = 'roles'
     role_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
-    #users = db.relationship('Users',backref='role')
+    
+    def __repr__(self):
+        return f"<Role {self.name}>"
 
 # Permissions model
 class Permission(db.Model):
@@ -91,6 +96,9 @@ class ConsignmentProduct(db.Model):
     item_type = db.relationship('ItemType', backref='consignment_products', lazy=True)
     item_subtype = db.relationship('ItemSubtype', backref='consignment_products', lazy=True)
     seller = db.relationship('User',backref = 'consignment_products',lazy=True)
+    
+    def __repr__(self):
+        return f"<ConsignmentProduct {self.name} - ${self.price}>"
 
 # Order model
 class Order(db.Model):
@@ -108,3 +116,6 @@ class Order(db.Model):
     product = db.relationship('ConsignmentProduct', backref='orders', lazy=True)
     buyer = db.relationship('User', foreign_keys=[buyer_id], backref='buyer_orders', lazy=True)
     seller = db.relationship('User', foreign_keys=[seller_id], backref='seller_orders', lazy=True)
+    
+    def __repr__(self):
+        return f"<Order {self.order_id} - Status: {self.order_status}>"

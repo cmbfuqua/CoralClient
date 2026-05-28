@@ -15,7 +15,7 @@
                 <td>{{ customer.first_name }} {{ customer.last_name }}</td>
                 <td>{{ customer.email }}</td>
                 <td>
-                    <a href="{{ url_for('view_maintenance_logs', customer_id=customer.user_id) }}">View Logs</a>
+                    <a href="{{ url_for('billing.view_maintenance_logs', customer_id=customer.user_id) }}">View Logs</a>
                     <button class="btn btn-danger" onclick="removeMaintenanceCustomer({{ customer.user_id }})">
                         Remove Maintenance
                     </button>

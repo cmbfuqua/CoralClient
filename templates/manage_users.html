@@ -1,47 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Manage Users</h2>
-<table>
-    <thead>
-        <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>In-Store Credit</th>
-            <th>View Profile</th>
-            <th class="action-column">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr>
-            <td data-label="First Name">{{ user.first_name }}</td>
-            <td data-label="Last Name">{{ user.last_name }}</td>
-            <td data-label="Email">{{ user.email }}</td>
-            <td data-label="Role">{{ user.role.name }}</td>
-            <td data-label="In-Store Credit">${{ user.in_store_credit }}</td>
-            <td data-label="View Profile">
-                <a href="{{ url_for('edit_user_admin', user_id=user.user_id) }}">View/Edit</a>
-            </td>
-            <td data-label="Action" class="action-column">
-                <form action="{{ url_for('update_user_role', user_id=user.user_id) }}" method="post">
-                    <select name="role" required>
-                        {% for role in roles %}
-                            <option value="{{ role.role_id }}" {% if user.role.role_id == role.role_id %}selected{% endif %}>
-                                {{ role.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit">Update</button>
-                </form>
-                <form action="{{ url_for('delete_user', user_id=user.user_id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete {{ user.first_name }} {{ user.last_name }}?');">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="section-header">
+    <h2 class="section-title">User Management</h2>
+    <div class="user-actions">
+        <span class="badge badge-success">{{ users|length }} Total Users</span>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>User Details</th>
+                <th>Role</th>
+                <th>In-Store Credit</th>
+                <th>Profile</th>
+                <th style="width: 300px;">Quick Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 700; color: var(--primary);">{{ user.first_name }} {{ user.last_name }}</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ user.email }}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge {% if user.role.name == 'admin' %}badge-danger{% elif user.role.name == 'seller' %}badge-success{% else %}badge-info{% endif %}" 
+                          style="background: {% if user.role.name == 'admin' %}#fee2e2{% elif user.role.name == 'seller' %}#dcfce7{% else %}#e0f2fe{% endif %}; 
+                                 color: {% if user.role.name == 'admin' %}#991b1b{% elif user.role.name == 'seller' %}#166534{% else %}#075985{% endif %};">
+                        {{ user.role.name|upper }}
+                    </span>
+                </td>
+                <td>
+                    <span style="font-weight: 700; color: var(--primary-light);">${{ "%.2f"|format(user.in_store_credit or 0) }}</span>
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_user_admin', user_id=user.user_id) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;">
+                        <i class="fas fa-user-edit"></i> Edit Profile
+                    </a>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <form action="{{ url_for('update_user_role', user_id=user.user_id) }}" method="post" style="display: flex; gap: 5px; flex: 1;">
+                            <select name="role" required style="padding: 6px 10px; font-size: 0.8rem;">
+                                {% for role in roles %}
+                                    <option value="{{ role.role_id }}" {% if user.role.role_id == role.role_id %}selected{% endif %}>
+                                        {{ role.name|capitalize }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </form>
+                        <form action="{{ url_for('billing.delete_user', user_id=user.user_id) }}" method="post" onsubmit="return confirm('Permanently delete {{ user.first_name }} {{ user.last_name }}?');">
+                            <button type="submit" class="btn" style="background: transparent; color: #ef4444; padding: 6px 10px;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

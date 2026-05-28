@@ -1,125 +1,167 @@
 {% extends "base.html" %}
-{% block content %}
-    <h2>All Bills</h2>
-    
-    {% macro month_dropdown() %}
-    <select name="month" id="month">
-        <option value="1">January</option>
-        <option value="2">February</option>
-        <option value="3">March</option>
-        <option value="4">April</option>
-        <option value="5">May</option>
-        <option value="6">June</option>
-        <option value="7">July</option>
-        <option value="8">August</option>
-        <option value="9">September</option>
-        <option value="10">October</option>
-        <option value="11">November</option>
-        <option value="12">December</option>
-    </select>
-{% endmacro %}
 
-{% if current_user.is_admin %}
-    <!-- Form to select month and generate invoices -->
-    <form action="{{ url_for('generate_invoices_all') }}" method="POST">
-        <label for="month">Select Month:</label>
-        {{ month_dropdown() }}
-        <button type="submit">Generate Invoices for All Customers</button>
-    </form>
-{% else %}
-    <form action="{{ url_for('generate_invoices_customer', customer_id=customer.user_id) }}" method="POST">
-        <label for="month">Select Month:</label>
-        {{ month_dropdown() }}
-        <button type="submit">Generate Invoice for {{ customer.first_name or 'Customer' }}</button>
-    </form>
+{% block content %}
+<div class="section-header">
+    <h2 class="section-title">Billing Dashboard</h2>
+    <p class="text-muted">Manage maintenance invoices and customer records.</p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Invoice Generation Card -->
+    <div class="dash-card">
+        <h3><i class="fas fa-file-invoice"></i> Generate Monthly Invoices</h3>
+        <form action="{{ url_for('billing.generate_invoices_all' if current_user.is_admin else 'billing.generate_invoices_customer', customer_id=customer.user_id if customer else 0) }}" method="GET">
+            <div class="form-group">
+                <label for="month">Select Billing Month</label>
+                <select name="month" id="month">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-magic"></i> Generate & Email Invoices
+            </button>
+        </form>
+        <p style="font-size: 0.8rem; margin-top: 15px; color: var(--text-muted);">
+            <i class="fas fa-info-circle"></i> Bills are generated from the previous rolling year.
+        </p>
+    </div>
+
+    <!-- Quick Links / Stats Card -->
+    <div class="dash-card">
+        <h3><i class="fas fa-link"></i> Quick Management</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('billing.customer_management') }}" class="btn btn-outline">
+                    <i class="fas fa-users-cog"></i> Customer Management
+                </a>
+                <a href="{{ url_for('billing.create_maintenance_visit') }}" class="btn btn-outline">
+                    <i class="fas fa-calendar-plus"></i> Log New Visit
+                </a>
+            {% else %}
+                <a href="{{ url_for('billing.view_maintenance_logs', customer_id=current_user.user_id) }}" class="btn btn-outline">
+                    <i class="fas fa-history"></i> My Maintenance History
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+{% if success_messages %}
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--primary); margin-bottom: 20px;">
+                <i class="fas fa-check-circle" style="color: #22c55e;"></i> Invoices Sent!
+            </h3>
+            <ul style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto; margin-bottom: 25px;">
+                {% for message in success_messages %}
+                    <li style="padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem;">
+                        <strong>{{ message.customer_name }}</strong> ({{ message.customer_email }})
+                    </li>
+                {% endfor %}
+            </ul>
+            <button onclick="closeModal()" class="btn btn-primary" style="width: 100%;">Got it</button>
+        </div>
+    </div>
+    <script>
+        function closeModal() { document.getElementById('successModal').style.display = 'none'; }
+    </script>
 {% endif %}
 
-    <p>NOTE: Bills are only generated from the previous rolling year</p>
+<!-- Bills Tables -->
+<div class="billing-sections">
+    <div class="section-group">
+        <h3 style="margin-bottom: 20px; color: #ef4444;"><i class="fas fa-exclamation-circle"></i> Unpaid Bills This Month</h3>
+        {{ render_table(unpaid_this_month, 'warning') }}
+    </div>
 
-    <!-- Display Success Modal if success_messages exists -->
-    {% if success_messages %}
-        <div id="successModal" class="modal" style="display: block;">
-            <div class="modal-content">
-                <h4>Invoices Sent Successfully!</h4>
-                <ul>
-                    {% for message in success_messages %}
-                        <li>Sent invoice to {{ message.customer_name }} at {{ message.customer_email }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeModal()" class="btn">Close</button>
-            </div>
-        </div>
+    <div class="section-group" style="margin-top: 50px;">
+        <h3 style="margin-bottom: 20px; color: #22c55e;"><i class="fas fa-check-double"></i> Paid Bills This Month</h3>
+        {{ render_table(paid_this_month, 'success') }}
+    </div>
 
-        <script>
-            // Function to close the modal
-            function closeModal() {
-                document.getElementById('successModal').style.display = 'none';
-            }
-        </script>
-    {% endif %}
+    <div class="section-group" style="margin-top: 50px;">
+        <h3 style="margin-bottom: 20px; color: var(--text-muted);"><i class="fas fa-history"></i> Previous Unpaid Bills</h3>
+        {{ render_table(previous_unpaid, 'danger') }}
+    </div>
 
-    <!-- Grouped Bills -->
-    <h3>Unpaid Bills This Month</h3>
-    {{ render_table(unpaid_this_month) }}
-    
-    <h3>Paid Bills This Month</h3>
-    {{ render_table(paid_this_month) }}
-    
-    <h3>Previous Unpaid Bills</h3>
-    {{ render_table(previous_unpaid) }}
-    
-    <h3>Previous Paid Bills</h3>
-    {{ render_table(previous_paid) }}
+    <div class="section-group" style="margin-top: 50px; margin-bottom: 60px;">
+        <h3 style="margin-bottom: 20px; color: var(--text-muted);"><i class="fas fa-archive"></i> Previous Paid Bills</h3>
+        {{ render_table(previous_paid, 'muted') }}
+    </div>
+</div>
+
 {% endblock %}
-{% macro render_table(bills) %}
-<table>
-    <thead>
-        <tr>
-            <th>Delete</th>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Total</th>
-            <th>Paid</th>
-            <th style="width:auto">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for bill in bills %}
-        <tr>
-            <td>
-                <form action="{{ url_for('delete_bill', billID=bill.BillID) }}"
-                      method="post"
-                      onsubmit="return confirm('Are you sure you want to delete the bill for {{ bill.visit.customer.first_name }} on {{ bill.CreatedAt }}?');">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
 
-            <td>{{ bill.CreatedAt }}</td>
-            <td>{{ bill.visit.customer.first_name }} {{ bill.visit.customer.last_name }}</td>
-            <td>{{ bill.TotalAmount }}</td>
-            <td>{{ "Yes" if bill.IsPaid else "No" }}</td>
-
-            <td>
-                <!-- Flexbox wrapper for side-by-side buttons -->
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <a href="{{ url_for('maintenance_report', visit_id=bill.visitID) }}"
-                       class="action-btn">
-                        View Visit
-                    </a>
-
-                    {% if not bill.IsPaid and current_user.is_admin %}
-                    <form action="{{ url_for('mark_bill_paid', bill_id=bill.BillID) }}"
-                          method="POST" style="margin:0;">
-                        <button class="billsbtn" type="submit">Mark as Paid</button>
+{% macro render_table(bills, type) %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                {% if current_user.is_admin %}<th>Delete</th>{% endif %}
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bill in bills %}
+            <tr>
+                {% if current_user.is_admin %}
+                <td>
+                    <form action="{{ url_for('billing.delete_bill', billID=bill.BillID) }}" method="post" onsubmit="return confirm('Delete bill for {{ bill.visit.customer.first_name }}?');">
+                        <button type="submit" class="btn" style="background: transparent; color: #ef4444; padding: 5px;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </form>
+                </td>
+                {% endif %}
+                <td>{{ bill.CreatedAt.strftime('%b %d, %Y') if bill.CreatedAt else 'N/A' }}</td>
+                <td><strong>{{ bill.visit.customer.first_name }} {{ bill.visit.customer.last_name }}</strong></td>
+                <td><span style="font-weight: 700;">${{ "%.2f"|format(bill.TotalAmount) }}</span></td>
+                <td>
+                    {% if bill.IsPaid %}
+                        <span class="badge badge-success">Paid</span>
+                    {% else %}
+                        <span class="badge badge-warning">Pending</span>
                     {% endif %}
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{{ url_for('billing.maintenance_report', visit_id=bill.visitID) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;">
+                            <i class="fas fa-eye"></i> Report
+                        </a>
+                        {% if not bill.IsPaid and current_user.is_admin %}
+                            <form action="{{ url_for('billing.mark_bill_paid', bill_id=bill.BillID) }}" method="POST" style="margin:0;">
+                                <button class="btn btn-primary" type="submit" style="padding: 6px 12px; font-size: 0.8rem;">
+                                    Mark Paid
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    No bills found in this category.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endmacro %}
-

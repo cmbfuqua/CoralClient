@@ -1,24 +1,33 @@
+import os
+from datetime import datetime
+import random
+import string
+from functools import wraps
+
 from flask import send_from_directory
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
-from billingroutes import *
 from waitress import serve
 from google.cloud import storage
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 
-from models import *
-from forms import *
+# Local application imports
 from DB import db, app
-from utility_functions import *
-from functools import wraps
-
-import os
-from datetime import datetime
-import random
-import string
+from gcs_utils import upload_image_to_gcs, delete_image_from_gcs, allowed_file
+from utility_functions import (
+    send_order_notification, send_dropoff_notification,
+    send_pickup_notification, send_cancellation_notification, admin_required
+)
+from models import User, Role, ItemType, ItemSubtype, ConsignmentProduct, Order
+from forms import (
+    RegistrationForm, EditUserForm, LoginForm, ChangeGeneratedPasswordForm,
+    ForgotPasswordForm, ForgotUsernameForm, ConsignmentForm, CreateOrderForm
+)
+from billingroutes import billing_bp
 
 
 # Initialize Flask app
@@ -29,6 +38,9 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+# Register Blueprints
+app.register_blueprint(billing_bp)
+
 # Function to validate DB connection
 def validate_db_connection():
     """
@@ -36,7 +48,8 @@ def validate_db_connection():
     """
     try:
         with app.app_context():
-            # Attempt to connect to the database
+            with db.engine.connect() as conn:
+                pass
             print("Database connection successful.")
     except Exception as e:
         print(f"Error: Unable to connect to the database.\n{e}")
@@ -128,11 +141,15 @@ def edit_user():
     return render_template('edit_user.html', form=form)
 
 @app.route('/user/<int:user_id>/edit', methods=['GET'])
+@login_required
+@admin_required
 def edit_user_admin(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('edit_user_admin.html', user=user)
 
 @app.route('/user/<int:user_id>/update', methods=['POST'])
+@login_required
+@admin_required
 def update_user(user_id):
     user = User.query.filter_by(user_id = user_id).first()
     user.first_name = request.form['first_name']
@@ -145,6 +162,8 @@ def update_user(user_id):
     return redirect(url_for('edit_user_admin', user_id=user_id))
 
 @app.route('/user/<int:user_id>/update-credit', methods=['POST'])
+@login_required
+@admin_required
 def update_in_store_credit(user_id):
     user = User.query.get_or_404(user_id)
     credit_change = float(request.form['credit_change'])
@@ -607,6 +626,7 @@ def create_order(product_id):
 
 @app.route('/search_buyer', methods=['GET'])
 @login_required
+@admin_required
 def search_buyer():
     if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized access'}), 403
@@ -690,11 +710,17 @@ def all_orders():
         flash('You do not have permission to view this page.', 'danger')
         return redirect(url_for('home'))
 
-    # Fetch orders grouped by status
+    # Fetch orders grouped by status with eager loading
+    all_orders_data = Order.query.options(
+        joinedload(Order.product),
+        joinedload(Order.buyer),
+        joinedload(Order.seller)
+    ).all()
+
     orders = {
-        'IP': Order.query.filter_by(order_status='IP').all(),
-        'C': Order.query.filter_by(order_status='C').all(),
-        'X': Order.query.filter_by(order_status='X').all(),
+        'IP': [o for o in all_orders_data if o.order_status == 'IP'],
+        'C': [o for o in all_orders_data if o.order_status == 'C'],
+        'X': [o for o in all_orders_data if o.order_status == 'X'],
     }
 
     return render_template('all_orders.html', orders=orders)
@@ -713,17 +739,22 @@ def billing():
 # Route to serve files from /data/uploads
 @app.route('/data/<filename>')
 def data(filename):
-    return send_from_directory('/data/uploads/BenFuqua1', 'IMG_3318.png')
-@app.route('/list_files')
-def list_files():
-    upload_folder = '/data/uploads/BenFuqua1'  # Your volume path where files are stored
-    files = os.listdir(upload_folder)  # List all files in the directory
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-    # Generate the file URLs for each file in the uploads folder
-    file_urls = [f'/data/uploads/BenFuqua1/{file}' for file in files if file.endswith(('jpg', 'png', 'gif'))]  # Filter for image files
-
-    # Pass the file URLs to the template
-    return render_template('file_list.html', file_urls=file_urls)
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=int(os.environ.get('PORT',8080)))
-    #app.run(debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    env = os.environ.get('FLASK_ENV', 'development')
+    
+    print(f"\n{'='*40}")
+    print(f" CORALS4CHEAP STARTING UP")
+    print(f" Environment: {env}")
+    print(f" Port:        {port}")
+    print(f"{'='*40}\n")
+
+    if env == 'development':
+        # Flask development server (provides logs & auto-reload)
+        app.run(host='0.0.0.0', port=port, debug=True)
+    else:
+        # Waitress production server
+        print(f"Serving with Waitress on http://0.0.0.0:{port}")
+        serve(app, host='0.0.0.0', port=port)
