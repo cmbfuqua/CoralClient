@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="section-header">
+    <h2 class="section-title">Consignment Dashboard</h2>
+    <p class="text-muted">Manage your listed items and add new pieces to the catalog.</p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Add Item Form -->
+    <div class="dash-card">
+        <h3><i class="fas fa-plus-circle"></i> List New Specimen</h3>
+        <form action="{{ url_for('catalog.consignment') }}" method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                <label for="name">Specimen Name</label>
+                {{ form.name(class="form-control", placeholder="e.g. Ultra Holy Grail Torch") }}
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description & Details</label>
+                {{ form.description(class="form-control", rows="3", placeholder="Lineage, size, care requirements...") }}
+            </div>
+
+            <div class="form-group">
+                <label for="price">Listing Price ($)</label>
+                {{ form.price(class="form-control", placeholder="0.00") }}
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="item_type">Category</label>
+                    <select id="item_type" name="item_type" class="form-control" onchange="filtersubtype(this.value)">
+                        <option value="">Select Category</option>
+                        {% for item_type_id, item_type_name in form.item_type.choices %}
+                            <option value="{{ item_type_id }}">{{ item_type_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label for="item_subtype">Sub-Category</label>
+                    <select id="item_subtype" name="item_subtype" class="form-control">
+                        <option value="">Select Sub-Category</option>
+                        {% for item_subtype_id, name in form.item_subtype.choices %}
+                            <option value="{{ item_subtype_id }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="image">High-Quality Image</label>
+                {{ form.image(class="form-control", style="padding: 8px; background: #fff;") }}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-upload"></i> Publish Listing
+            </button>
+        </form>
+    </div>
+
+    <!-- Active Listings -->
+    <div class="dash-card" style="grid-column: span 2;">
+        <h3><i class="fas fa-box-open"></i> Your Active Listings</h3>
+        
+        <div class="specimen-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+            {% for item in user_products %}
+                <div class="specimen-card" style="border: 1px solid var(--border-color); box-shadow: none;">
+                    <div class="specimen-img-container" style="padding-top: 70%;">
+                        <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                        {% if item.order_status != 'None' %}
+                            <div class="specimen-tag tag-reserved">{{ item.order_status }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="specimen-info" style="padding: 15px;">
+                        <h3 class="specimen-title" style="font-size: 1.1rem; margin-bottom: 5px;">{{ item.name }}</h3>
+                        <span class="specimen-price" style="font-size: 1.2rem; display: block; margin-bottom: 15px;">${{ item.price }}</span>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <form action="{{ url_for('edit_item', item_id=item.product_id) }}" method="GET" style="flex: 1;">
+                                <button type="submit" class="btn btn-outline" style="width: 100%; padding: 6px; font-size: 0.8rem;">Edit</button>
+                            </form>
+                            {% if item.order_status == 'None' %}
+                                <form action="{{ url_for('delete_item', item_id=item.product_id) }}" method="POST" style="flex: 1;">
+                                    <button type="submit" class="btn" style="width: 100%; padding: 6px; font-size: 0.8rem; background: #fee2e2; color: #991b1b;" onclick="return confirm('Delete this listing?');">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius: var(--radius-md);">
+                    <i class="fas fa-camera" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p>You haven't listed any specimens yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function filtersubtype(itemTypeId) {
+    const subCategorySelect = document.getElementById('item_subtype');
+    if (!itemTypeId) {
+        subCategorySelect.innerHTML = '<option value="">Select Sub-Category</option>';
+        return;
+    }
+    
+    fetch(`/catalog/subcategories/${itemTypeId}`)
+        .then(response => response.json())
+        .then(data => {
+            subCategorySelect.innerHTML = '<option value="">Select Sub-Category</option>';
+            data.forEach(([subCategoryId, subCategoryName]) => {
+                const option = document.createElement('option');
+                option.value = subCategoryId;
+                option.textContent = subCategoryName;
+                subCategorySelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching subcategories:', error);
+            alert('Could not load subcategories.');
+        });
+}
+</script>
+{% endblock %}
