@@ -49,7 +49,7 @@
     <h2>Create Order</h2>
 
     <!-- Form for order creation -->
-    <form method="POST" action="{{ url_for('create_order', product_id=product.product_id) }}">
+    <form method="POST" action="{{ url_for('admin.create_order', product_id=product.product_id) }}">
         {{ form.hidden_tag() }} <!-- CSRF token -->
     
         <!-- Buyer Selection -->
@@ -80,7 +80,7 @@
         }
 
         // Construct the search URL with the query parameters
-        fetch(`/search_buyer?first_name=${firstName}&last_name=${lastName}&seller_id=${seller_id}`)
+        fetch(`{{ url_for('admin.search_buyer') }}?first_name=${firstName}&last_name=${lastName}&seller_id=${seller_id}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch buyers.');

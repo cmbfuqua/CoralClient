@@ -1,6 +1,10 @@
 import os
 from flask import Flask
 from .extensions import db, mail, bcrypt, login_manager, csrf
+from dotenv import load_dotenv
+
+# Load environment variables early
+load_dotenv()
 
 def create_app(config_class=None):
     app = Flask(__name__)

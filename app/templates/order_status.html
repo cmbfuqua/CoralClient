@@ -32,6 +32,7 @@
                 {{ order.product_dropoff.strftime('%Y-%m-%d %H:%M:%S') }}
             {% else %}
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" name="set_dropoff" class="btn btn-secondary">Set Dropoff Date</button>
                 </form>
             {% endif %}
@@ -41,12 +42,14 @@
                 {{ order.product_pickup.strftime('%Y-%m-%d %H:%M:%S') }}
             {% else %}
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" name="set_pickup" class="btn btn-secondary">Set Pickup Date</button>
                 </form>
             {% endif %}
         </p>
         <p><strong>Payment Status:</strong> {{ order.payment_status if order.payment_status else "Not Paid" }}</p>
         <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="payment_status">Update Payment Status:</label>
             <select name="payment_status" id="payment_status" class="form-control">
                 <option value="Not Paid" {% if order.payment_status == 'Not Paid' %}selected{% endif %}>Not Paid</option>
@@ -57,6 +60,7 @@
         </form>
         <p><strong>Order Status:</strong> {{ order.order_status }}</p>
         <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" name="delete_order" class="btn btn-danger">Delete Order</button>
         </form>
     </section>

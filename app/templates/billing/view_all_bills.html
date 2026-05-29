@@ -123,6 +123,7 @@
                 {% if current_user.is_admin %}
                 <td>
                     <form action="{{ url_for('billing.delete_bill', billID=bill.BillID) }}" method="post" onsubmit="return confirm('Delete bill for {{ bill.visit.customer.first_name }}?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn" style="background: transparent; color: #ef4444; padding: 5px;">
                             <i class="fas fa-trash-alt"></i>
                         </button>
@@ -146,6 +147,7 @@
                         </a>
                         {% if not bill.IsPaid and current_user.is_admin %}
                             <form action="{{ url_for('billing.mark_bill_paid', bill_id=bill.BillID) }}" method="POST" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-primary" type="submit" style="padding: 6px 12px; font-size: 0.8rem;">
                                     Mark Paid
                                 </button>

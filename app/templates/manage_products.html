@@ -1,52 +1,70 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Manage Products</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Product Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Item Type</th>
-            <th>Seller</th>
-            <th>Featured</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for product in products %}
+<div class="section-header">
+    <h2 class="section-title">Product Management</h2>
+    <div class="user-actions">
+        <span class="badge badge-success">{{ products|length }} Total Products</span>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
             <tr>
-                <td>{{ product.name }}</td>
-                <td>{{ product.description }}</td>
-                <td>{{ product.price }}</td>
-                <td>{{ product.item_type.name }}</td>
-                <td>{{ product.seller.first_name }} {{ product.seller.last_name }}</td>
-                <td>
-                    <input type="checkbox" 
-                           class="featured-checkbox" 
-                           data-product-id="{{ product.product_id }}" 
-                           {% if product.featured %}checked{% endif %}>
-                </td>
-                <td>
-                    <form action="{{ url_for('edit_item', item_id=product.product_id) }}" method="get">
-                        <button type="submit">Edit</button>
-                    </form>
-                </td>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Seller</th>
+                <th style="text-align: center;">Featured</th>
+                <th>Action</th>
             </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            {% for product in products %}
+                <tr>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 700; color: var(--primary);">{{ product.name }}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.description }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-info" style="background: #e0f2fe; color: #075985;">
+                            {{ product.item_type.name }}
+                        </span>
+                    </td>
+                    <td><span style="font-weight: 700;">${{ "%.2f"|format(product.price) }}</span></td>
+                    <td>{{ product.seller.first_name }} {{ product.seller.last_name }}</td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" 
+                               class="featured-checkbox" 
+                               data-product-id="{{ product.product_id }}" 
+                               {% if product.featured %}checked{% endif %}
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                    </td>
+                    <td>
+                        <a href="{{ url_for('catalog.edit_item', item_id=product.product_id) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 <script>
 document.querySelectorAll('.featured-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', function() {
         const productId = this.dataset.productId;
         const isFeatured = this.checked ? 1 : 0;
 
-        fetch(`/update_featured/${productId}`, {
+        fetch(`{{ url_for('admin.update_featured', product_id=0) }}`.replace('0', productId), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({ featured: isFeatured }),
         })
@@ -55,9 +73,13 @@ document.querySelectorAll('.featured-checkbox').forEach(checkbox => {
                 alert('Failed to update featured status.');
                 this.checked = !this.checked; // revert checkbox state
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred.');
+            this.checked = !this.checked;
         });
     });
 });
 </script>
 {% endblock %}
-

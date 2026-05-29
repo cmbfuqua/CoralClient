@@ -3,7 +3,7 @@
     <h2>Maintenance Logs for {{ customer.first_name }} {{ customer.last_name }}</h2>
 
     <!-- Form to select month and generate invoice -->
-    <form action="{{ url_for('generate_invoices_customer', customer_id=customer.user_id) }}" method="GET">
+    <form action="{{ url_for('billing.generate_invoices_customer', customer_id=customer.user_id) }}" method="GET">
         <label for="month">Select Month:</label>
         <select name="month" id="month">
             <option value=1>January</option>

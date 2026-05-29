@@ -1,70 +1,110 @@
 {% extends "base.html" %}
+
 {% block content %}
-    <h2>Admin Cleanup</h2>
-    <p style="color: red; font-weight: bold;">
-        WARNING: Clicking the button below will delete any and all orders which have a status of completed or deleted as well as their associated pictures.
+<div class="section-header">
+    <h2 class="section-title">System Cleanup</h2>
+    <p class="text-muted">Maintain database health by removing archived records.</p>
+</div>
+
+<div class="dash-card" style="max-width: 800px; margin: 0 auto; border-left: 5px solid #ef4444;">
+    <h3 style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Warning: Permanent Deletion</h3>
+    <p style="margin-bottom: 30px; line-height: 1.6;">
+        Proceeding with this action will **permanently delete** all orders marked as **Completed** or **Canceled**, along with their associated product records and hosted images. This action cannot be undone.
     </p>
 
-    <button type="button" class="btn btn-danger" onclick="showConfirmationBox()">DELETE ALL COMPLETED AND DELETED ORDERS</button>
+    <button type="button" class="btn btn-danger" onclick="showConfirmationBox()" id="mainDeleteBtn" style="padding: 15px 30px;">
+        <i class="fas fa-trash-alt" style="margin-right: 10px;"></i> PURGE COMPLETED & CANCELED ORDERS
+    </button>
     
-    <form action="{{ url_for('cleanup_orders') }}" method="POST" id="cleanupForm">
-        <div id="confirmation-box" style="display: none; margin-top: 20px;">
-            <label for="confirmation_text">Please type "I Know What I am doing" to confirm:</label>
-            <input type="text" name="confirmation_text" required>
-            <button type="submit" class="btn btn-warning">Submit</button>
+    <form action="{{ url_for('admin.cleanup_orders') }}" method="POST" id="cleanupForm" style="display: none; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border-color);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group">
+            <label for="confirmation_text">To confirm, please type exactly: <code style="background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px;">I Know What I am doing</code></label>
+            <input type="text" name="confirmation_text" id="confirmation_text" class="form-control" placeholder="Type confirmation here..." required autocomplete="off">
+        </div>
+        
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
+            <button type="submit" class="btn btn-warning" style="flex: 1;">
+                <i class="fas fa-check-circle"></i> Confirm Purge
+            </button>
+            <button type="button" class="btn btn-outline" onclick="hideConfirmationBox()" style="flex: 1;">
+                Cancel
+            </button>
         </div>
     </form>
+</div>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Cleanup Successful</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p id="successMessage"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
+<!-- Success Modal (Custom Implementation) -->
+<div id="successModal" class="modal" style="display: none;">
+    <div class="modal-content" style="text-align: center;">
+        <div style="font-size: 4rem; color: #22c55e; margin-bottom: 20px;">
+            <i class="fas fa-check-circle"></i>
         </div>
+        <h3 style="color: var(--primary); margin-bottom: 10px;">Cleanup Successful</h3>
+        <p id="successMessage" style="color: var(--text-muted); margin-bottom: 30px;"></p>
+        
+        <button type="button" class="btn btn-primary" onclick="closeModal()" style="width: 100%;">
+            Return to Dashboard
+        </button>
+        
+        <button type="button" class="modal-close-x" onclick="closeModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">
+            &times;
+        </button>
     </div>
+</div>
 
-    <script>
-        function showConfirmationBox() {
-            document.getElementById('confirmation-box').style.display = 'block';
-        }
+<script>
+    function showConfirmationBox() {
+        document.getElementById('cleanupForm').style.display = 'block';
+        document.getElementById('mainDeleteBtn').style.display = 'none';
+        document.getElementById('confirmation_text').focus();
+    }
 
-        // Handle form submission using AJAX
-        document.getElementById('cleanupForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
+    function hideConfirmationBox() {
+        document.getElementById('cleanupForm').style.display = 'none';
+        document.getElementById('mainDeleteBtn').style.display = 'block';
+    }
 
-            var formData = new FormData(this);
+    function closeModal() {
+        document.getElementById('successModal').style.display = 'none';
+        location.reload();
+    }
 
-            fetch("{{ url_for('cleanup_orders') }}", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success modal and display the message
-                    document.getElementById('successMessage').textContent = data.message;
-                    $('#successModal').modal('show');
-                } else {
-                    alert(data.message); // Or handle failure however you'd like
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred.');
-            });
+    // Handle form submission using AJAX
+    document.getElementById('cleanupForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+        fetch("{{ url_for('admin.cleanup_orders') }}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('successMessage').textContent = data.message;
+                document.getElementById('successModal').style.display = 'flex';
+            } else {
+                alert(data.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Purge';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during the purge process.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Purge';
         });
-    </script>
+    });
+</script>
 
 {% endblock %}
